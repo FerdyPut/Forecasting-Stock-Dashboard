@@ -6,33 +6,6 @@ from datetime import date, timedelta
 
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 
-# ==== CSS untuk bikin tombol pill (segmented style) ====
-st.markdown("""
-    <style>
-    div[data-baseweb="radio"] > div {
-        display: flex;
-        gap: 6px;
-    }
-    div[data-baseweb="radio"] label {
-        background-color: #1e1e2f;
-        padding: 6px 14px;
-        border-radius: 20px;
-        border: 1px solid #4a4a5c;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-    }
-    div[data-baseweb="radio"] label:hover {
-        background-color: #2c2c3e;
-        border-color: #6a6a8a;
-    }
-    div[data-baseweb="radio"] input:checked + div {
-        background-color: #3b82f6 !important;
-        color: white !important;
-        border-color: #3b82f6 !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 st.title("📈 Stock Dashboard - Yahoo Finance")
 
 # --- Layout 2 kolom ---
@@ -65,24 +38,35 @@ with col1:
             "20 Tahun": 365*20,
         }
 
-        # tombol pill horizontal
-        time_choice = st.radio(
-            "Time Horizon",
-            list(horizon_options.keys()),
-            horizontal=True
-        )
+        if "time_choice" not in st.session_state:
+            st.session_state.time_choice = "1 Bulan"
 
-        days_back = horizon_options[time_choice]
+        st.write("### ⏳ Time Horizon")
+        for option in horizon_options.keys():
+            if st.button(option):
+                st.session_state.time_choice = option
+
+        days_back = horizon_options[st.session_state.time_choice]
         end_date = date.today()
         start_date = end_date - timedelta(days=days_back)
+
+        st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
 
     else:
         start_date = st.date_input("Start Date", date(2010, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
-    # --- Pilih metrik ---
+    # --- Pilih metrik dengan tombol ---
     metrics = ["Close", "Open", "High", "Low", "Volume"]
-    metric_choice = st.radio("Pilih Metrik:", metrics)
+    if "metric_choice" not in st.session_state:
+        st.session_state.metric_choice = "Close"
+
+    st.write("### 📊 Pilih Metrik")
+    for m in metrics:
+        if st.button(m):
+            st.session_state.metric_choice = m
+
+    st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
 
 with col2:
     # --- Ambil data ---
@@ -94,13 +78,15 @@ with col2:
         else:
             fig = go.Figure()
 
-            # --- Handle single vs multi ticker untuk line chart ---
+            metric_choice = st.session_state.metric_choice
+
+            # --- Handle single vs multi ticker ---
             if len(tickers) == 1:
                 data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
             else:
                 data_metric = data[metric_choice]
 
-            # Normalisasi harga (kecuali volume, biar lebih fair)
+            # Normalisasi (kecuali volume)
             if metric_choice != "Volume":
                 data_metric = data_metric / data_metric.iloc[0]
 
@@ -121,13 +107,13 @@ with col2:
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # --- Tabel return (hanya untuk harga, bukan volume) ---
+            # --- Return (hanya harga) ---
             if metric_choice != "Volume":
                 returns = (data_metric.iloc[-1] / data_metric.iloc[0] - 1) * 100
                 st.subheader("📋 Persentase Return (%)")
                 st.dataframe(returns.sort_values(ascending=False).round(2))
 
-            # --- Tombol download ---
+            # --- Download ---
             csv = data.to_csv().encode("utf-8")
             st.download_button(
                 "⬇️ Download Data CSV",
