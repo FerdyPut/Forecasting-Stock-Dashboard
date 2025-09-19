@@ -41,11 +41,15 @@ with col1:
         start_date = end_date - timedelta(days=days_back)
 
     else:
-        start_date = st.date_input("Start Date", date(1900, 1, 1))
+        start_date = st.date_input("Start Date", date(2010, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
-    # --- Pilih chart type ---
-    chart_type = st.radio("Pilih Chart Type:", ["Line Chart", "Candlestick Chart"])
+    # --- Pilih metrik ---
+    metrics = st.multiselect(
+        "Pilih metrik harga yang ingin ditampilkan:",
+        ["Open", "High", "Low", "Close", "Volume"],
+        default=["Close"]
+    )
 
 with col2:
     # --- Ambil data ---
@@ -57,54 +61,38 @@ with col2:
         else:
             fig = go.Figure()
 
-            if chart_type == "Candlestick Chart" and len(tickers) == 1:
-                ticker = tickers[0]
-                df = data[["Open", "High", "Low", "Close"]]
-
-                fig.add_trace(go.Candlestick(
-                    x=df.index,
-                    open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"],
-                    name=ticker,
-                ))
-
-                fig.update_layout(
-                    title=f"📊 Candlestick Chart - {ticker}",
-                    xaxis_title="Date",
-                    yaxis_title="Price",
-                    hovermode="x unified",
-                    template="plotly_dark",
-                )
-
-            else:
-                # --- Handle single vs multi ticker untuk line chart ---
+            for metric in metrics:
+                # --- Handle single vs multi ticker ---
                 if len(tickers) == 1:
-                    data_close = data[["Close"]].rename(columns={"Close": tickers[0]})
+                    series = data[[metric]].rename(columns={metric: tickers[0]})
                 else:
-                    data_close = data["Close"]
+                    series = data[metric]
 
-                # Normalisasi harga biar bisa dibandingkan
-                data_close = data_close / data_close.iloc[0]
-
-                for col in data_close.columns:
-                    col_name = str(col)
+                for col in series.columns:
+                    col_name = f"{col} - {metric}"
                     fig.add_trace(go.Scatter(
-                        x=data_close.index, y=data_close[col], mode="lines", name=col_name,
-                        hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Price: %{y:.2f}<extra></extra>"
+                        x=series.index, y=series[col], mode="lines", name=col_name,
+                        hovertemplate=f"{col_name}<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
                     ))
 
-                fig.update_layout(
-                    title="📊 Perbandingan Harga Saham (Normalized)",
-                    xaxis_title="Date",
-                    yaxis_title="Normalized Price",
-                    hovermode="x unified",
-                    template="plotly_dark",
-                )
+            fig.update_layout(
+                title="📊 Pergerakan Saham",
+                xaxis_title="Date",
+                yaxis_title="Value",
+                hovermode="x unified",
+                template="plotly_dark",
+            )
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # --- Tabel return (hanya untuk line chart) ---
-            if chart_type == "Line Chart":
-                returns = (data_close.iloc[-1] / data_close.iloc[0] - 1) * 100
+            # --- Tabel return (hanya jika Close dipilih) ---
+            if "Close" in metrics:
+                if len(tickers) == 1:
+                    close_prices = data[["Close"]].rename(columns={"Close": tickers[0]})
+                else:
+                    close_prices = data["Close"]
+
+                returns = (close_prices.iloc[-1] / close_prices.iloc[0] - 1) * 100
                 st.subheader("📋 Persentase Return (%)")
                 st.dataframe(returns.sort_values(ascending=False).round(2))
 
