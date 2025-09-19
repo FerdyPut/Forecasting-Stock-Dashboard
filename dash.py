@@ -1,97 +1,134 @@
 import streamlit as st
 import yfinance as yf
-import plotly.graph_objects as go
 import pandas as pd
-from datetime import datetime, timedelta
+import plotly.graph_objs as go
+from datetime import date, timedelta
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 
-st.title("📈 Stock Dashboard")
+st.title("📈 Stock Dashboard - Yahoo Finance")
 
-# ===============================
-# Sidebar - Pilih saham
-# ===============================
-tickers = ["BBRI.JK", "BBCA.JK", "TLKM.JK", "BMRI.JK", "ASII.JK", "ICBP.JK", "UNVR.JK"]
-selected_tickers = st.sidebar.multiselect("Pilih Saham", tickers, default=["BBRI.JK"])
+# --- Layout 2 kolom ---
+col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
 
-# ===============================
-# Time Horizon (Tombol dalam 3 kolom, rapat)
-# ===============================
-st.subheader("⏳ Time Horizon")
+with col1:
+    # --- Pilih ticker ---
+    tickers_list = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+        "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
+    ]
+    tickers = st.multiselect(
+        "Pilih saham:", 
+        tickers_list, 
+        default=["AAPL", "MSFT"]
+    )
 
-time_options = {
-    "1M": "1mo",
-    "3M": "3mo",
-    "6M": "6mo",
-    "1Y": "1y",
-    "5Y": "5y",
-    "10Y": "10y",
-    "20Y": "20y"
-}
+    # --- Pilih mode date ---
+    date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
 
-cols = st.columns(3)
-selected_horizon = None
-i = 0
-for label, period in time_options.items():
-    if cols[i % 3].button(label):
-        selected_horizon = period
-    i += 1
+    if date_mode == "Time Horizon Cepat":
+        horizon_options = {
+            "1 Minggu": 7,
+            "1 Bulan": 30,
+            "3 Bulan": 90,
+            "6 Bulan": 180,
+            "1 Tahun": 365,
+            "5 Tahun": 365*5,
+            "10 Tahun": 365*10,
+            "20 Tahun": 365*20,
+        }
 
-if not selected_horizon:
-    selected_horizon = "6mo"  # default
+        if "time_choice" not in st.session_state:
+            st.session_state.time_choice = "1 Bulan"
 
-# ===============================
-# Pilihan custom date
-# ===============================
-st.subheader("📅 Custom Date Range")
-col1, col2 = st.columns(2)
-start_date = col1.date_input("Start Date", datetime.today() - timedelta(days=365))
-end_date = col2.date_input("End Date", datetime.today())
+        st.write("### ⏳ Time Horizon")
 
-# ===============================
-# Metric Pilihan (dengan button 3 kolom)
-# ===============================
-st.subheader("📊 Pilih Metrik")
+        # --- bikin tombol dalam grid 3 kolom ---
+        options = list(horizon_options.keys())
+        for i in range(0, len(options), 3):
+            cols = st.columns(3)
+            for j, option in enumerate(options[i:i+3]):
+                if cols[j].button(option):
+                    st.session_state.time_choice = option
 
-metric_options = ["Open", "High", "Low", "Close", "Volume"]
-metric_cols = st.columns(3)
-selected_metric = None
-for i, m in enumerate(metric_options):
-    if metric_cols[i % 3].button(m):
-        selected_metric = m
+        days_back = horizon_options[st.session_state.time_choice]
+        end_date = date.today()
+        start_date = end_date - timedelta(days=days_back)
 
-if not selected_metric:
-    selected_metric = "Close"
+        st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
 
-# ===============================
-# Download data saham
-# ===============================
-df = yf.download(selected_tickers, period=selected_horizon, start=start_date, end=end_date, group_by='ticker')
-
-# ===============================
-# Plot Chart
-# ===============================
-fig = go.Figure()
-
-for ticker in selected_tickers:
-    if len(selected_tickers) == 1:
-        data = df
     else:
-        data = df[ticker]
+        start_date = st.date_input("Start Date", date(2010, 1, 1))
+        end_date = st.date_input("End Date", date.today())
 
-    fig.add_trace(go.Scatter(
-        x=data.index,
-        y=data[selected_metric],
-        mode="lines",
-        name=ticker
-    ))
+    # --- Pilih metrik ---
+    metrics = ["Close", "Open", "High", "Low", "Volume"]
+    if "metric_choice" not in st.session_state:
+        st.session_state.metric_choice = "Close"
 
-fig.update_layout(
-    title=f"{selected_metric} Price",
-    xaxis_title="Date",
-    yaxis_title="Price",
-    template="plotly_dark",
-    hovermode="x unified",
-)
+    st.write("### 📊 Pilih Metrik")
 
-st.plotly_chart(fig, use_container_width=True)
+    # --- bikin tombol metrik dalam grid 3 kolom ---
+    for i in range(0, len(metrics), 3):
+        cols = st.columns(3)
+        for j, m in enumerate(metrics[i:i+3]):
+            if cols[j].button(m):
+                st.session_state.metric_choice = m
+
+    st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
+
+with col2:
+    # --- Ambil data ---
+    if tickers:
+        data = yf.download(tickers, start=start_date, end=end_date)
+
+        if data.empty:
+            st.error("⚠️ Data tidak ditemukan untuk range ini.")
+        else:
+            fig = go.Figure()
+
+            metric_choice = st.session_state.metric_choice
+
+            # --- Handle single vs multi ticker ---
+            if len(tickers) == 1:
+                data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+            else:
+                data_metric = data[metric_choice]
+
+            # Normalisasi (kecuali volume)
+            if metric_choice != "Volume":
+                data_metric = data_metric / data_metric.iloc[0]
+
+            for col in data_metric.columns:
+                col_name = str(col)
+                fig.add_trace(go.Scatter(
+                    x=data_metric.index, y=data_metric[col], mode="lines", name=col_name,
+                    hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
+                ))
+
+            fig.update_layout(
+                title=f"📊 Perbandingan {metric_choice} Saham",
+                xaxis_title="Date",
+                yaxis_title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
+                hovermode="x unified",
+                template="plotly_dark",
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+
+            # --- Return (hanya harga) ---
+            if metric_choice != "Volume":
+                returns = (data_metric.iloc[-1] / data_metric.iloc[0] - 1) * 100
+                st.subheader("📋 Persentase Return (%)")
+                st.dataframe(returns.sort_values(ascending=False).round(2))
+
+            # --- Download ---
+            csv = data.to_csv().encode("utf-8")
+            st.download_button(
+                "⬇️ Download Data CSV",
+                data=csv,
+                file_name="stock_data.csv",
+                mime="text/csv"
+            )
+    else:
+        st.warning("Silakan pilih minimal satu saham.")
