@@ -12,17 +12,45 @@ import os
 def get_tickers_master():
     file_path = "tickers_master.csv"
 
+    # Kalau file sudah ada → langsung pakai
     if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-    else:
-        url = "https://www.idx.co.id/umbraco/Surface/ListedCompany/GetCompanyProfiles"
-        response = requests.get(url)
-        data = response.json()
-        df = pd.DataFrame(data)[["KodeEmiten", "NamaEmiten"]]
-        df.to_csv(file_path, index=False, encoding="utf-8-sig")
+        return pd.read_csv(file_path)
 
-    return df
+    # Kalau belum ada → coba ambil dari IDX
+    url = "https://www.idx.co.id/umbraco/Surface/ListedCompany/GetCompanyProfiles"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
 
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                df = pd.DataFrame(data)[["KodeEmiten", "NamaEmiten"]]
+                df.to_csv(file_path, index=False, encoding="utf-8-sig")
+                return df
+            except Exception as e:
+                st.error(f"❌ Gagal parsing JSON dari IDX: {e}")
+        else:
+            st.error(f"❌ Gagal ambil data dari IDX. Status code: {response.status_code}")
+    except Exception as e:
+        st.error(f"❌ Error request ke IDX: {e}")
+
+    # --- Backup (kalau gagal semua) ---
+    st.warning("⚠️ Menggunakan daftar ticker default (backup).")
+    backup = pd.DataFrame({
+        "KodeEmiten": ["BBCA", "BBRI", "BMRI", "TLKM", "ASII", "UNVR"],
+        "NamaEmiten": [
+            "Bank Central Asia Tbk",
+            "Bank Rakyat Indonesia Tbk",
+            "Bank Mandiri Tbk",
+            "Telkom Indonesia Tbk",
+            "Astra International Tbk",
+            "Unilever Indonesia Tbk"
+        ]
+    })
+    return backup
+
+# --- Load tickers master ---
 tickers_df = get_tickers_master()
 tickers_master = tickers_df["KodeEmiten"].tolist()
 
@@ -51,20 +79,23 @@ if tickers:
     # Format ticker ke Yahoo Finance (tambah .JK untuk saham Indonesia)
     tickers_yf = [t + ".JK" for t in tickers]
 
-    data = yf.download(tickers_yf, start=start_date, end=end_date)["Close"]
+    try:
+        data = yf.download(tickers_yf, start=start_date, end=end_date)["Close"]
 
-    if isinstance(data, pd.Series):  # kalau cuma 1 ticker
-        data = data.to_frame()
+        if isinstance(data, pd.Series):  # kalau cuma 1 ticker
+            data = data.to_frame()
 
-    st.subheader("Data Historis (Closing Price)")
+        st.subheader("Data Historis (Closing Price)")
 
-    # Plot pakai seaborn
-    fig, ax = plt.subplots(figsize=(12,6))
-    sns.lineplot(data=data, ax=ax)
-    ax.set_title(f"Closing Price - {', '.join(tickers)}")
-    ax.set_xlabel("Tanggal")
-    ax.set_ylabel("Harga (IDR)")
-    st.pyplot(fig)
+        # Plot pakai seaborn
+        fig, ax = plt.subplots(figsize=(12, 6))
+        sns.lineplot(data=data, ax=ax)
+        ax.set_title(f"Closing Price - {', '.join(tickers)}")
+        ax.set_xlabel("Tanggal")
+        ax.set_ylabel("Harga (IDR)")
+        st.pyplot(fig)
 
-    st.write("📊 Preview Data")
-    st.write(data.tail())
+        st.write("📊 Preview Data")
+        st.write(data.tail())
+    except Exception as e:
+        st.error(f"❌ Gagal ambil data dari Yahoo Finance: {e}")
