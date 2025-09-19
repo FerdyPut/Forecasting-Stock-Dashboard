@@ -20,7 +20,7 @@ with col1:
     tickers = st.multiselect(
         "Pilih saham:", 
         tickers_list, 
-        default=["AAPL", "MSFT", "GOOGL"]
+        default=["AAPL", "MSFT"]
     )
 
     # --- Pilih mode date ---
@@ -44,6 +44,9 @@ with col1:
         start_date = st.date_input("Start Date", date(1900, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
+    # --- Pilih chart type ---
+    chart_type = st.radio("Pilih Chart Type:", ["Line Chart", "Candlestick Chart"])
+
 with col2:
     # --- Ambil data ---
     if tickers:
@@ -52,40 +55,58 @@ with col2:
         if data.empty:
             st.error("⚠️ Data tidak ditemukan untuk range ini.")
         else:
-            # --- Handle single vs multi ticker ---
-            if len(tickers) == 1:
-                # Kalau hanya 1 ticker, ubah jadi DataFrame dengan nama kolom = ticker
-                data = data[["Close"]].rename(columns={"Close": tickers[0]})
-            else:
-                # Kalau multi ticker, ambil level Close
-                data = data["Close"]
-
-            # --- Normalisasi harga biar bisa dibandingkan ---
-            data = data / data.iloc[0]
-
-            # --- Plot interaktif ---
             fig = go.Figure()
-            for col in data.columns:
-                col_name = str(col)  # pastikan selalu string
-                fig.add_trace(go.Scatter(
-                    x=data.index, y=data[col], mode="lines", name=col_name,
-                    hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Price: %{y:.2f}<extra></extra>"
+
+            if chart_type == "Candlestick Chart" and len(tickers) == 1:
+                ticker = tickers[0]
+                df = data[["Open", "High", "Low", "Close"]]
+
+                fig.add_trace(go.Candlestick(
+                    x=df.index,
+                    open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"],
+                    name=ticker,
                 ))
 
-            fig.update_layout(
-                title="📊 Perbandingan Harga Saham (Normalized)",
-                xaxis_title="Date",
-                yaxis_title="Normalized Price",
-                hovermode="x unified",
-                template="plotly_dark",
-            )
+                fig.update_layout(
+                    title=f"📊 Candlestick Chart - {ticker}",
+                    xaxis_title="Date",
+                    yaxis_title="Price",
+                    hovermode="x unified",
+                    template="plotly_dark",
+                )
+
+            else:
+                # --- Handle single vs multi ticker untuk line chart ---
+                if len(tickers) == 1:
+                    data_close = data[["Close"]].rename(columns={"Close": tickers[0]})
+                else:
+                    data_close = data["Close"]
+
+                # Normalisasi harga biar bisa dibandingkan
+                data_close = data_close / data_close.iloc[0]
+
+                for col in data_close.columns:
+                    col_name = str(col)
+                    fig.add_trace(go.Scatter(
+                        x=data_close.index, y=data_close[col], mode="lines", name=col_name,
+                        hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Price: %{y:.2f}<extra></extra>"
+                    ))
+
+                fig.update_layout(
+                    title="📊 Perbandingan Harga Saham (Normalized)",
+                    xaxis_title="Date",
+                    yaxis_title="Normalized Price",
+                    hovermode="x unified",
+                    template="plotly_dark",
+                )
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # --- Tabel return ---
-            returns = (data.iloc[-1] / data.iloc[0] - 1) * 100
-            st.subheader("📋 Persentase Return (%)")
-            st.dataframe(returns.sort_values(ascending=False).round(2))
+            # --- Tabel return (hanya untuk line chart) ---
+            if chart_type == "Line Chart":
+                returns = (data_close.iloc[-1] / data_close.iloc[0] - 1) * 100
+                st.subheader("📋 Persentase Return (%)")
+                st.dataframe(returns.sort_values(ascending=False).round(2))
 
             # --- Tombol download ---
             csv = data.to_csv().encode("utf-8")
