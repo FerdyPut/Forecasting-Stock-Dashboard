@@ -81,42 +81,43 @@ with col1:
 
 with col2:
     # --- Ambil data ---
-    if tickers:
-        data = yf.download(tickers, start=start_date, end=end_date)
+    st.container(broder=True):
+        if tickers:
+            data = yf.download(tickers, start=start_date, end=end_date)
 
-        if data.empty:
-            st.error("⚠️ Data tidak ditemukan untuk range ini.")
-        else:
-            fig = go.Figure()
-
-            metric_choice = st.session_state.metric_choice
-
-            # --- Handle single vs multi ticker ---
-            if len(tickers) == 1:
-                data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+            if data.empty:
+                st.error("⚠️ Data tidak ditemukan untuk range ini.")
             else:
-                data_metric = data[metric_choice]
+                fig = go.Figure()
 
-            # Normalisasi (kecuali volume)
-            if metric_choice != "Volume":
-                data_metric = data_metric / data_metric.iloc[0]
+                metric_choice = st.session_state.metric_choice
 
-            for col in data_metric.columns:
-                col_name = str(col)
-                fig.add_trace(go.Scatter(
-                    x=data_metric.index, y=data_metric[col], mode="lines", name=col_name,
-                    hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
-                ))
+                # --- Handle single vs multi ticker ---
+                if len(tickers) == 1:
+                    data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+                else:
+                    data_metric = data[metric_choice]
 
-            fig.update_layout(
-                title=f"📊 Perbandingan {metric_choice} Saham",
-                xaxis_title="Date",
-                yaxis_title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
-                hovermode="x unified",
-                template="plotly_dark",
-            )
+                # Normalisasi (kecuali volume)
+                if metric_choice != "Volume":
+                    data_metric = data_metric / data_metric.iloc[0]
 
-            st.plotly_chart(fig, use_container_width=True)
+                for col in data_metric.columns:
+                    col_name = str(col)
+                    fig.add_trace(go.Scatter(
+                        x=data_metric.index, y=data_metric[col], mode="lines", name=col_name,
+                        hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
+                    ))
+
+                fig.update_layout(
+                    title=f"📊 Perbandingan {metric_choice} Saham",
+                    xaxis_title="Date",
+                    yaxis_title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
+                    hovermode="x unified",
+                    template="plotly_dark",
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
 
             # --- Return (hanya harga) ---
             if metric_choice != "Volume":
