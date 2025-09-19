@@ -12,45 +12,42 @@ st.title("📈 Stock Dashboard - Yahoo Finance")
 col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
 
 with col1:
-    with st.container(border=True):
+ with st.container():
     # --- Pilih ticker ---
-        tickers_list = [
-            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-            "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
-        ]
-        tickers = st.multiselect(
-            "Pilih saham:", 
-            tickers_list, 
-            default=["AAPL", "MSFT"]
-        )
+    tickers_list = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+        "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
+    ]
+    tickers = st.multiselect(
+        "Pilih saham:", 
+        tickers_list, 
+        default=["AAPL", "MSFT"]
+    )
 
-        # --- Pilih mode date ---
-        date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
+    # --- Pilih mode date ---
+    date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
 
-        if date_mode == "Time Horizon Cepat":
-            horizon_options = {
-                "1 Minggu": 7,
-                "1 Bulan": 30,
-                "3 Bulan": 90,
-                "6 Bulan": 180,
-                "1 Tahun": 365,
-                "5 Tahun": 365*5,
-                "10 Tahun": 365*10,
-                "20 Tahun": 365*20,
-            }
+    if date_mode == "Time Horizon Cepat":
+        horizon_options = {
+            "1 Minggu": 7,
+            "1 Bulan": 30,
+            "3 Bulan": 90,
+            "6 Bulan": 180,
+            "1 Tahun": 365,
+            "5 Tahun": 365*5,
+            "10 Tahun": 365*10,
+            "20 Tahun": 365*20,
+        }
 
         if "time_choice" not in st.session_state:
             st.session_state.time_choice = "1 Bulan"
-        else:
-            start_date = st.date_input("Start Date", date(2010, 1, 1))
-            end_date = st.date_input("End Date", date.today())
 
         st.write("##### ⏳ Time Horizon")
 
-        # --- bikin tombol dalam grid 3 kolom (rapat) ---
+        # --- tombol dalam grid 3 kolom ---
         options = list(horizon_options.keys())
         for i in range(0, len(options), 3):
-            cols = st.columns([1, 1, 1, 0.2])  # extra kolom kecil buat buffer
+            cols = st.columns([1, 1, 1, 0.2])  # extra buffer
             for j, option in enumerate(options[i:i+3]):
                 if cols[j].button(option, use_container_width=True):
                     st.session_state.time_choice = option
@@ -60,6 +57,11 @@ with col1:
         start_date = end_date - timedelta(days=days_back)
 
         st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
+
+    else:  # Custom Date Range
+        start_date = st.date_input("Start Date", date(2010, 1, 1))
+        end_date = st.date_input("End Date", date.today())
+
 
     # --- Pilih metrik ---
     metrics = ["Close", "Open", "High", "Low", "Volume"]
