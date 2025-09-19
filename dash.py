@@ -27,41 +27,41 @@ with col1:
         # --- Pilih mode date ---
         date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
 
-    if date_mode == "Time Horizon Cepat":
-        horizon_options = {
-            "1 Minggu": 7,
-            "1 Bulan": 30,
-            "3 Bulan": 90,
-            "6 Bulan": 180,
-            "1 Tahun": 365,
-            "5 Tahun": 365*5,
-            "10 Tahun": 365*10,
-            "20 Tahun": 365*20,
-        }
+        if date_mode == "Time Horizon Cepat":
+            horizon_options = {
+                "1 Minggu": 7,
+                "1 Bulan": 30,
+                "3 Bulan": 90,
+                "6 Bulan": 180,
+                "1 Tahun": 365,
+                "5 Tahun": 365*5,
+                "10 Tahun": 365*10,
+                "20 Tahun": 365*20,
+            }
 
-    if "time_choice" not in st.session_state:
-        st.session_state.time_choice = "1 Bulan"
+        if "time_choice" not in st.session_state:
+            st.session_state.time_choice = "1 Bulan"
 
-        with st.container(border=True):
-            st.write("##### ⏳ Time Horizon")
+            with st.container(border=True):
+                st.write("##### ⏳ Time Horizon")
 
-            # --- bikin tombol dalam grid 3 kolom (rapat) ---
-            options = list(horizon_options.keys())
-            for i in range(0, len(options), 3):
-                cols = st.columns([1, 1, 1, 0.2])  # extra kolom kecil buat buffer
-                for j, option in enumerate(options[i:i+3]):
-                    if cols[j].button(option, use_container_width=True):
-                        st.session_state.time_choice = option
+                # --- bikin tombol dalam grid 3 kolom (rapat) ---
+                options = list(horizon_options.keys())
+                for i in range(0, len(options), 3):
+                    cols = st.columns([1, 1, 1, 0.2])  # extra kolom kecil buat buffer
+                    for j, option in enumerate(options[i:i+3]):
+                        if cols[j].button(option, use_container_width=True):
+                            st.session_state.time_choice = option
 
-            days_back = horizon_options[st.session_state.time_choice]
-            end_date = date.today()
-            start_date = end_date - timedelta(days=days_back)
+                days_back = horizon_options[st.session_state.time_choice]
+                end_date = date.today()
+                start_date = end_date - timedelta(days=days_back)
 
-            st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
+                st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
 
-    else:
-        start_date = st.date_input("Start Date", date(2010, 1, 1))
-        end_date = st.date_input("End Date", date.today())
+        else:
+            start_date = st.date_input("Start Date", date(2010, 1, 1))
+            end_date = st.date_input("End Date", date.today())
 
     # --- Pilih metrik ---
     metrics = ["Close", "Open", "High", "Low", "Volume"]
