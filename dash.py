@@ -41,7 +41,7 @@ with col1:
         start_date = end_date - timedelta(days=days_back)
 
     else:
-        start_date = st.date_input("Start Date", date(2020, 1, 1))
+        start_date = st.date_input("Start Date", date(1900, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
 with col2:
