@@ -13,9 +13,15 @@ col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
 
 with col1:
     # --- Pilih ticker ---
-    tickers_list = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-                    "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"]
-    tickers = st.multiselect("Pilih saham:", tickers_list, default=["AAPL", "MSFT", "GOOGL"])
+    tickers_list = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+        "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
+    ]
+    tickers = st.multiselect(
+        "Pilih saham:", 
+        tickers_list, 
+        default=["AAPL", "MSFT", "GOOGL"]
+    )
 
     # --- Pilih mode date ---
     date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
@@ -46,13 +52,15 @@ with col2:
         if data.empty:
             st.error("⚠️ Data tidak ditemukan untuk range ini.")
         else:
-            # Handle single vs multi ticker
+            # --- Handle single vs multi ticker ---
             if len(tickers) == 1:
-                data = data["Close"].to_frame()
+                # Kalau hanya 1 ticker, ubah jadi DataFrame dengan nama kolom = ticker
+                data = data[["Close"]].rename(columns={"Close": tickers[0]})
             else:
+                # Kalau multi ticker, ambil level Close
                 data = data["Close"]
 
-            # Normalisasi harga biar bisa dibandingkan
+            # --- Normalisasi harga biar bisa dibandingkan ---
             data = data / data.iloc[0]
 
             # --- Plot interaktif ---
