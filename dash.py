@@ -7,7 +7,7 @@ from datetime import date, timedelta
 st.set_page_config(page_title="📈 Stock Dashboard", layout="wide")
 st.title("📊 Stock Comparison Dashboard (Yahoo Finance)")
 
-# Daftar contoh saham (bisa ditambah)
+# Daftar contoh saham (bisa ditambah sesuai kebutuhan)
 available_tickers = ["AAPL", "AMZN", "GOOGL", "META", "MSFT", "NVDA", "TSLA", "BBRI.JK", "BBCA.JK", "BMRI.JK"]
 
 # Input multi select
@@ -40,10 +40,10 @@ if st.button("📥 Ambil Data"):
     if data.empty:
         st.warning("⚠️ Data tidak ditemukan.")
     else:
-        # Handle multi-index / single ticker
+        # Kalau multi ticker → ambil level "Adj Close"
         if isinstance(data.columns, pd.MultiIndex):
             data = data.xs("Adj Close", axis=1, level=0)
-        else:
+        else:  # single ticker
             data = data[["Adj Close"]]
             data.columns = selected_tickers  # rename biar konsisten
 
