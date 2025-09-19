@@ -72,7 +72,7 @@ with col2:
                     col_name = f"{col} - {metric}"
                     fig.add_trace(go.Scatter(
                         x=series.index, y=series[col], mode="lines", name=col_name,
-                        hovertemplate=f"{col_name}<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
+                        hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
                     ))
 
             fig.update_layout(
