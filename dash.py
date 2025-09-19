@@ -12,72 +12,72 @@ st.title("📈 Stock Dashboard - Yahoo Finance")
 col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
 
 with col1:
- with st.container(border=True):
-    # --- Pilih ticker ---
-    tickers_list = [
-        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-        "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
-    ]
-    tickers = st.multiselect(
-        "Pilih saham:", 
-        tickers_list, 
-        default=["AAPL", "MSFT"]
-    )
+    with st.container(border=True):
+        # --- Pilih ticker ---
+        tickers_list = [
+            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+            "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
+        ]
+        tickers = st.multiselect(
+            "Pilih saham:", 
+            tickers_list, 
+            default=["AAPL", "MSFT"]
+        )
 
-    # --- Pilih mode date ---
-    date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
+        # --- Pilih mode date ---
+        date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
 
-    if date_mode == "Time Horizon Cepat":
-        horizon_options = {
-            "1 Minggu": 7,
-            "1 Bulan": 30,
-            "3 Bulan": 90,
-            "6 Bulan": 180,
-            "1 Tahun": 365,
-            "5 Tahun": 365*5,
-            "10 Tahun": 365*10,
-            "20 Tahun": 365*20,
-        }
+        if date_mode == "Time Horizon Cepat":
+            horizon_options = {
+                "1 Minggu": 7,
+                "1 Bulan": 30,
+                "3 Bulan": 90,
+                "6 Bulan": 180,
+                "1 Tahun": 365,
+                "5 Tahun": 365*5,
+                "10 Tahun": 365*10,
+                "20 Tahun": 365*20,
+            }
 
-        if "time_choice" not in st.session_state:
-            st.session_state.time_choice = "1 Bulan"
+            if "time_choice" not in st.session_state:
+                st.session_state.time_choice = "1 Bulan"
 
-        st.write("##### ⏳ Time Horizon")
+            st.write("##### ⏳ Time Horizon")
 
-        # --- tombol dalam grid 3 kolom ---
-        options = list(horizon_options.keys())
-        for i in range(0, len(options), 3):
-            cols = st.columns([1, 1, 1, 0.2])  # extra buffer
-            for j, option in enumerate(options[i:i+3]):
-                if cols[j].button(option, use_container_width=True):
-                    st.session_state.time_choice = option
+            # --- tombol dalam grid 3 kolom ---
+            options = list(horizon_options.keys())
+            for i in range(0, len(options), 3):
+                cols = st.columns([1, 1, 1, 0.2])  # extra buffer
+                for j, option in enumerate(options[i:i+3]):
+                    if cols[j].button(option, use_container_width=True):
+                        st.session_state.time_choice = option
 
-        days_back = horizon_options[st.session_state.time_choice]
-        end_date = date.today()
-        start_date = end_date - timedelta(days=days_back)
+            days_back = horizon_options[st.session_state.time_choice]
+            end_date = date.today()
+            start_date = end_date - timedelta(days=days_back)
 
-        st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
+            st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
 
-    else:  # Custom Date Range
-        start_date = st.date_input("Start Date", date(2010, 1, 1))
-        end_date = st.date_input("End Date", date.today())
+        else:  # Custom Date Range
+            start_date = st.date_input("Start Date", date(2010, 1, 1))
+            end_date = st.date_input("End Date", date.today())
 
-with st.container(border=True):
-    # --- Pilih metrik ---
-    metrics = ["Close", "Open", "High", "Low", "Volume"]
-    if "metric_choice" not in st.session_state:
-        st.session_state.metric_choice = "Close"
+    with st.container(border=True):
+        # --- Pilih metrik ---
+        metrics = ["Close", "Open", "High", "Low", "Volume"]
+        if "metric_choice" not in st.session_state:
+            st.session_state.metric_choice = "Close"
 
-    st.write("##### 📊 Pilih Metrik")
+        st.write("##### 📊 Pilih Metrik")
 
-    # --- bikin tombol metrik dalam grid 3 kolom (rapat) ---
-    for i in range(0, len(metrics), 3):
-        cols = st.columns([1, 1, 1, 0.2])
-        for j, m in enumerate(metrics[i:i+3]):
-            if cols[j].button(m, use_container_width=True):
-                st.session_state.metric_choice = m
+        # --- bikin tombol metrik dalam grid 3 kolom (rapat) ---
+        for i in range(0, len(metrics), 3):
+            cols = st.columns([1, 1, 1, 0.2])
+            for j, m in enumerate(metrics[i:i+3]):
+                if cols[j].button(m, use_container_width=True):
+                    st.session_state.metric_choice = m
 
-    st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
+        st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
 
 with col2:
     # --- Ambil data ---
