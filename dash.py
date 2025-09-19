@@ -41,27 +41,26 @@ with col1:
 
         if "time_choice" not in st.session_state:
             st.session_state.time_choice = "1 Bulan"
-
-            with st.container(border=True):
-                st.write("##### ⏳ Time Horizon")
-
-                # --- bikin tombol dalam grid 3 kolom (rapat) ---
-                options = list(horizon_options.keys())
-                for i in range(0, len(options), 3):
-                    cols = st.columns([1, 1, 1, 0.2])  # extra kolom kecil buat buffer
-                    for j, option in enumerate(options[i:i+3]):
-                        if cols[j].button(option, use_container_width=True):
-                            st.session_state.time_choice = option
-
-                days_back = horizon_options[st.session_state.time_choice]
-                end_date = date.today()
-                start_date = end_date - timedelta(days=days_back)
-
-                st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
-
         else:
             start_date = st.date_input("Start Date", date(2010, 1, 1))
             end_date = st.date_input("End Date", date.today())
+            
+        with st.container(border=True):
+            st.write("##### ⏳ Time Horizon")
+
+            # --- bikin tombol dalam grid 3 kolom (rapat) ---
+            options = list(horizon_options.keys())
+            for i in range(0, len(options), 3):
+                cols = st.columns([1, 1, 1, 0.2])  # extra kolom kecil buat buffer
+                for j, option in enumerate(options[i:i+3]):
+                    if cols[j].button(option, use_container_width=True):
+                        st.session_state.time_choice = option
+
+            days_back = horizon_options[st.session_state.time_choice]
+            end_date = date.today()
+            start_date = end_date - timedelta(days=days_back)
+
+            st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
 
     # --- Pilih metrik ---
     metrics = ["Close", "Open", "High", "Low", "Volume"]
