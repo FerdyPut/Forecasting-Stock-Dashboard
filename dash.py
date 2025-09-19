@@ -21,11 +21,17 @@ end_date = st.date_input("End Date", date.today())
 tickers_list = [t.strip() for t in tickers.split(",") if t.strip()]
 
 if st.button("📥 Ambil Data"):
-    data = yf.download(tickers_list, start=start_date, end=end_date)["Adj Close"]
+    data = yf.download(tickers_list, start=start_date, end=end_date)
 
     if data.empty:
         st.warning("⚠️ Data tidak ditemukan. Coba ticker lain atau ubah tanggal.")
     else:
+        # Ambil hanya kolom 'Adj Close' (tangani MultiIndex jika multi ticker)
+        if isinstance(data.columns, pd.MultiIndex):
+            data = data.xs("Adj Close", axis=1, level=0)
+        else:
+            data = data[["Adj Close"]]
+
         # Normalisasi harga biar start = 1
         normalized = data / data.iloc[0]
 
