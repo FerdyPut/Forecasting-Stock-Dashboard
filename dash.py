@@ -39,8 +39,8 @@ with col1:
                 "20 Tahun": 365*20,
             }
 
-            if "time_choice" not in st.session_state:
-                st.session_state.time_choice = "1 Bulan"
+        if "time_choice" not in st.session_state:
+            st.session_state.time_choice = "1 Bulan"
 
         with st.container(border=True):
             st.write("##### ⏳ Time Horizon")
