@@ -5,81 +5,65 @@ import plotly.express as px
 from datetime import date, timedelta
 
 st.set_page_config(page_title="📈 Stock Dashboard", layout="wide")
-st.title("📊 Stock Comparison Dashboard (Yahoo Finance)")
 
-# Daftar contoh saham (bisa ditambah sesuai kebutuhan)
-available_tickers = ["AAPL", "AMZN", "GOOGL", "META", "MSFT", "NVDA", "TSLA", "BBRI.JK", "BBCA.JK", "BMRI.JK"]
+st.markdown("## 📊 Stock Performance Dashboard")
+st.caption("Easily compare stocks against others in their peer group.")
 
-# Input multi select
-selected_tickers = st.multiselect("Pilih saham:", available_tickers, default=["AAPL", "TSLA", "BBRI.JK"])
+# Sidebar / Left Panel
+col1, col2 = st.columns([1, 3])
 
-# Pilih mode time horizon
-horizon_mode = st.radio("Pilih Time Horizon:", ["Custom Date", "Preset"])
+with col1:
+    # Multi select tickers
+    available_tickers = ["AAPL","AMZN","GOOGL","META","MSFT","NVDA","TSLA","BBRI.JK","BBCA.JK","BMRI.JK"]
+    selected = st.multiselect("Stock tickers", available_tickers, default=["AAPL","MSFT","GOOGL","NVDA"])
 
-if horizon_mode == "Custom Date":
-    start_date = st.date_input("Start Date", date(2022, 1, 1))
-    end_date = st.date_input("End Date", date.today())
-else:
-    preset = st.selectbox("Pilih periode:", ["1W", "1M", "3M", "1Y", "5Y"])
+    # Time horizon buttons
+    horizon = st.radio("Time horizon", ["1M","3M","6M","1Y","5Y","10Y"], index=2)
+
+    # Hitung start_date dari horizon
     end_date = date.today()
-    if preset == "1W":
-        start_date = end_date - timedelta(weeks=1)
-    elif preset == "1M":
-        start_date = end_date - timedelta(days=30)
-    elif preset == "3M":
-        start_date = end_date - timedelta(days=90)
-    elif preset == "1Y":
-        start_date = end_date - timedelta(days=365)
-    elif preset == "5Y":
-        start_date = end_date - timedelta(days=5*365)
+    if horizon == "1M": start_date = end_date - timedelta(days=30)
+    elif horizon == "3M": start_date = end_date - timedelta(days=90)
+    elif horizon == "6M": start_date = end_date - timedelta(days=180)
+    elif horizon == "1Y": start_date = end_date - timedelta(days=365)
+    elif horizon == "5Y": start_date = end_date - timedelta(days=1825)
+    elif horizon == "10Y": start_date = end_date - timedelta(days=3650)
 
-# Download data
-if st.button("📥 Ambil Data"):
-    data = yf.download(selected_tickers, start=start_date, end=end_date)
+# Get stock data
+if selected:
+    data = yf.download(selected, start=start_date, end=end_date)
 
-    if data.empty:
-        st.warning("⚠️ Data tidak ditemukan.")
-    else:
-        # Kalau multi ticker → ambil level "Adj Close"
+    if not data.empty:
+        # Handle multi ticker vs single
         if isinstance(data.columns, pd.MultiIndex):
             data = data.xs("Adj Close", axis=1, level=0)
-        else:  # single ticker
+        else:
             data = data[["Adj Close"]]
-            data.columns = selected_tickers  # rename biar konsisten
+            data.columns = selected
 
-        # Normalisasi harga biar start = 1
         normalized = data / data.iloc[0]
-
-        # Ubah ke format long untuk plotly
-        df_long = normalized.reset_index().melt(
-            id_vars="Date", var_name="Stock", value_name="Normalized Price"
-        )
+        df_long = normalized.reset_index().melt(id_vars="Date", var_name="Stock", value_name="Normalized Price")
 
         # Grafik interaktif
-        fig = px.line(
-            df_long,
-            x="Date",
-            y="Normalized Price",
-            color="Stock",
-            title="📈 Normalized Stock Price Comparison"
-        )
-        fig.update_layout(
-            hovermode="x unified",
-            xaxis_title="Date",
-            yaxis_title="Normalized Price"
-        )
+        with col2:
+            fig = px.line(df_long, x="Date", y="Normalized Price", color="Stock")
+            fig.update_layout(
+                hovermode="x unified",
+                xaxis_title="Date",
+                yaxis_title="Normalized Price",
+                legend_title="Stock"
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-        st.plotly_chart(fig, use_container_width=True)
+        # Hitung performance terakhir
+        returns = (normalized.iloc[-1] - 1) * 100
+        best_stock = returns.idxmax()
+        worst_stock = returns.idxmin()
 
-        # Tabel harga terakhir
-        st.subheader("📊 Harga Terakhir")
-        st.dataframe(data.tail())
+        with col1:
+            st.success(f"📈 Best stock: {best_stock} (+{returns[best_stock]:.2f}%)")
+            st.error(f"📉 Worst stock: {worst_stock} ({returns[worst_stock]:.2f}%)")
 
-        # Download tombol CSV
+        # Data download
         csv = data.to_csv().encode("utf-8")
-        st.download_button(
-            "⬇️ Download Data CSV",
-            csv,
-            f"stock_data_{start_date}_{end_date}.csv",
-            "text/csv"
-        )
+        st.download_button("⬇️ Download CSV", csv, f"stocks_{horizon}.csv", "text/csv")
