@@ -41,6 +41,7 @@ with col1:
         if "time_choice" not in st.session_state:
             st.session_state.time_choice = "1 Bulan"
 
+        container = st.container(border=True)
         st.write("##### ⏳ Time Horizon")
 
         # --- bikin tombol dalam grid 3 kolom (rapat) ---
