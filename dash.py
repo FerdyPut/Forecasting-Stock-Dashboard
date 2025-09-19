@@ -27,20 +27,20 @@ with col1:
         # --- Pilih mode date ---
         date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
 
-        if date_mode == "Time Horizon Cepat":
-            horizon_options = {
-                "1 Minggu": 7,
-                "1 Bulan": 30,
-                "3 Bulan": 90,
-                "6 Bulan": 180,
-                "1 Tahun": 365,
-                "5 Tahun": 365*5,
-                "10 Tahun": 365*10,
-                "20 Tahun": 365*20,
-            }
+    if date_mode == "Time Horizon Cepat":
+        horizon_options = {
+            "1 Minggu": 7,
+            "1 Bulan": 30,
+            "3 Bulan": 90,
+            "6 Bulan": 180,
+            "1 Tahun": 365,
+            "5 Tahun": 365*5,
+            "10 Tahun": 365*10,
+            "20 Tahun": 365*20,
+        }
 
-        if "time_choice" not in st.session_state:
-            st.session_state.time_choice = "1 Bulan"
+    if "time_choice" not in st.session_state:
+        st.session_state.time_choice = "1 Bulan"
 
         with st.container(border=True):
             st.write("##### ⏳ Time Horizon")
