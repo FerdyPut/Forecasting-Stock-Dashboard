@@ -44,12 +44,20 @@ with col1:
         start_date = st.date_input("Start Date", date(2010, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
-    # --- Pilih metrik ---
-    metrics = st.multiselect(
-        "Pilih metrik harga yang ingin ditampilkan:",
-        ["Open", "High", "Low", "Close", "Volume"],
-        default=["Close"]
-    )
+    # --- Pilih metrik pakai checkbox ---
+    st.markdown("### Pilih Metrik")
+    show_open = st.checkbox("Open", value=False)
+    show_high = st.checkbox("High", value=False)
+    show_low = st.checkbox("Low", value=False)
+    show_close = st.checkbox("Close", value=True)
+    show_volume = st.checkbox("Volume", value=False)
+
+    metrics = []
+    if show_open: metrics.append("Open")
+    if show_high: metrics.append("High")
+    if show_low: metrics.append("Low")
+    if show_close: metrics.append("Close")
+    if show_volume: metrics.append("Volume")
 
 with col2:
     # --- Ambil data ---
