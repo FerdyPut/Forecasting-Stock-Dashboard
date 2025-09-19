@@ -6,6 +6,33 @@ from datetime import date, timedelta
 
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 
+# ==== CSS untuk bikin tombol pill (segmented style) ====
+st.markdown("""
+    <style>
+    div[data-baseweb="radio"] > div {
+        display: flex;
+        gap: 6px;
+    }
+    div[data-baseweb="radio"] label {
+        background-color: #1e1e2f;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid #4a4a5c;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    div[data-baseweb="radio"] label:hover {
+        background-color: #2c2c3e;
+        border-color: #6a6a8a;
+    }
+    div[data-baseweb="radio"] input:checked + div {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-color: #3b82f6 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("📈 Stock Dashboard - Yahoo Finance")
 
 # --- Layout 2 kolom ---
@@ -34,8 +61,17 @@ with col1:
             "6 Bulan": 180,
             "1 Tahun": 365,
             "5 Tahun": 365*5,
+            "10 Tahun": 365*10,
+            "20 Tahun": 365*20,
         }
-        time_choice = st.selectbox("Pilih Time Horizon:", list(horizon_options.keys()))
+
+        # tombol pill horizontal
+        time_choice = st.radio(
+            "Time Horizon",
+            list(horizon_options.keys()),
+            horizontal=True
+        )
+
         days_back = horizon_options[time_choice]
         end_date = date.today()
         start_date = end_date - timedelta(days=days_back)
@@ -44,20 +80,9 @@ with col1:
         start_date = st.date_input("Start Date", date(2010, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
-    # --- Pilih metrik pakai checkbox ---
-    st.markdown("### Pilih Metrik")
-    show_open = st.checkbox("Open", value=False)
-    show_high = st.checkbox("High", value=False)
-    show_low = st.checkbox("Low", value=False)
-    show_close = st.checkbox("Close", value=True)
-    show_volume = st.checkbox("Volume", value=False)
-
-    metrics = []
-    if show_open: metrics.append("Open")
-    if show_high: metrics.append("High")
-    if show_low: metrics.append("Low")
-    if show_close: metrics.append("Close")
-    if show_volume: metrics.append("Volume")
+    # --- Pilih metrik ---
+    metrics = ["Close", "Open", "High", "Low", "Volume"]
+    metric_choice = st.radio("Pilih Metrik:", metrics)
 
 with col2:
     # --- Ambil data ---
@@ -69,38 +94,36 @@ with col2:
         else:
             fig = go.Figure()
 
-            for metric in metrics:
-                # --- Handle single vs multi ticker ---
-                if len(tickers) == 1:
-                    series = data[[metric]].rename(columns={metric: tickers[0]})
-                else:
-                    series = data[metric]
+            # --- Handle single vs multi ticker untuk line chart ---
+            if len(tickers) == 1:
+                data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+            else:
+                data_metric = data[metric_choice]
 
-                for col in series.columns:
-                    col_name = f"{col} - {metric}"
-                    fig.add_trace(go.Scatter(
-                        x=series.index, y=series[col], mode="lines", name=col_name,
-                        hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
-                    ))
+            # Normalisasi harga (kecuali volume, biar lebih fair)
+            if metric_choice != "Volume":
+                data_metric = data_metric / data_metric.iloc[0]
+
+            for col in data_metric.columns:
+                col_name = str(col)
+                fig.add_trace(go.Scatter(
+                    x=data_metric.index, y=data_metric[col], mode="lines", name=col_name,
+                    hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
+                ))
 
             fig.update_layout(
-                title="📊 Pergerakan Saham",
+                title=f"📊 Perbandingan {metric_choice} Saham",
                 xaxis_title="Date",
-                yaxis_title="Value",
+                yaxis_title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
                 hovermode="x unified",
                 template="plotly_dark",
             )
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # --- Tabel return (hanya jika Close dipilih) ---
-            if "Close" in metrics:
-                if len(tickers) == 1:
-                    close_prices = data[["Close"]].rename(columns={"Close": tickers[0]})
-                else:
-                    close_prices = data["Close"]
-
-                returns = (close_prices.iloc[-1] / close_prices.iloc[0] - 1) * 100
+            # --- Tabel return (hanya untuk harga, bukan volume) ---
+            if metric_choice != "Volume":
+                returns = (data_metric.iloc[-1] / data_metric.iloc[0] - 1) * 100
                 st.subheader("📋 Persentase Return (%)")
                 st.dataframe(returns.sort_values(ascending=False).round(2))
 
