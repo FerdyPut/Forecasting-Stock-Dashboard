@@ -1,54 +1,70 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-from prophet import Prophet
-import plotly.graph_objs as go
+import seaborn as sns
+import matplotlib.pyplot as plt
 from datetime import date
+import requests
+import os
 
-st.title("📈 Stock Forecasting App (Yahoo Finance)")
+# --- Ambil daftar ticker IDX (auto-generate jika belum ada) ---
+@st.cache_data
+def get_tickers_master():
+    file_path = "tickers_master.csv"
 
-# Input multi ticker
-tickers = st.text_input("Masukkan kode saham (pisahkan dengan koma, contoh: AAPL, TSLA, BBNI.JK):", "AAPL, TSLA")
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+    else:
+        url = "https://www.idx.co.id/umbraco/Surface/ListedCompany/GetCompanyProfiles"
+        response = requests.get(url)
+        data = response.json()
+        df = pd.DataFrame(data)[["KodeEmiten", "NamaEmiten"]]
+        df.to_csv(file_path, index=False, encoding="utf-8-sig")
 
-# Range tanggal
+    return df
+
+tickers_df = get_tickers_master()
+tickers_master = tickers_df["KodeEmiten"].tolist()
+
+# --- Streamlit App ---
+st.title("📈 Stock Dashboard IDX (Yahoo Finance)")
+
+# Multi input ticker dari master list
+tickers = st.multiselect(
+    "Pilih Saham (Ticker IDX):",
+    tickers_master,
+    default=["BBCA", "BBRI", "TLKM"]
+)
+
+# Periode tanggal
 start_date = st.date_input("Start Date", date(2020, 1, 1))
 end_date = st.date_input("End Date", date.today())
 
-# Periode ramalan
-n_days = st.slider("Ramalkan berapa hari ke depan:", 7, 90, 30)
+# Time horizon (opsi sederhana)
+horizon = st.selectbox(
+    "Pilih Time Horizon:",
+    ["1 Hari", "1 Minggu", "1 Bulan", "3 Bulan", "6 Bulan", "1 Tahun"]
+)
 
-# Proses tiap ticker
-for ticker in [t.strip() for t in tickers.split(",")]:
-    st.subheader(f"📊 {ticker} Stock")
+# --- Ambil data dan tampilkan chart ---
+if tickers:
+    # Format ticker ke Yahoo Finance (tambah .JK untuk saham Indonesia)
+    tickers_yf = [t + ".JK" for t in tickers]
 
-    # Ambil data dari Yahoo Finance
-    data = yf.download(ticker, start=start_date, end=end_date)
-    if data.empty:
-        st.warning(f"Data untuk {ticker} tidak ditemukan.")
-        continue
+    data = yf.download(tickers_yf, start=start_date, end=end_date)["Close"]
 
-    # Plot harga close historis
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name='Close Price'))
-    fig.update_layout(title=f"{ticker} Closing Price", xaxis_title="Date", yaxis_title="Price")
-    st.plotly_chart(fig)
+    if isinstance(data, pd.Series):  # kalau cuma 1 ticker
+        data = data.to_frame()
 
-    # Prophet Forecasting
-    df_train = data.reset_index()[['Date','Close']]
-    df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
+    st.subheader("Data Historis (Closing Price)")
 
-    model = Prophet(daily_seasonality=True)
-    model.fit(df_train)
+    # Plot pakai seaborn
+    fig, ax = plt.subplots(figsize=(12,6))
+    sns.lineplot(data=data, ax=ax)
+    ax.set_title(f"Closing Price - {', '.join(tickers)}")
+    ax.set_xlabel("Tanggal")
+    ax.set_ylabel("Harga (IDR)")
+    st.pyplot(fig)
 
-    future = model.make_future_dataframe(periods=n_days)
-    forecast = model.predict(future)
-
-    # Plot forecast
-    fig2 = go.Figure()
-    fig2.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name='Forecast'))
-    fig2.add_trace(go.Scatter(x=df_train['ds'], y=df_train['y'], name='Actual'))
-    fig2.update_layout(title=f"Forecast {ticker} {n_days} Hari ke Depan", xaxis_title="Date", yaxis_title="Price")
-    st.plotly_chart(fig2)
-
-    # Tampilkan tabel prediksi
-    st.write(forecast[['ds','yhat','yhat_lower','yhat_upper']].tail(n_days))
+    st.write("📊 Preview Data")
+    st.write(data.tail())
