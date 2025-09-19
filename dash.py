@@ -41,7 +41,7 @@ with col1:
         if "time_choice" not in st.session_state:
             st.session_state.time_choice = "1 Bulan"
 
-        st.write("## ⏳ Time Horizon")
+        st.write("# ⏳ Time Horizon")
 
         # --- bikin tombol dalam grid 3 kolom (rapat) ---
         options = list(horizon_options.keys())
@@ -66,7 +66,7 @@ with col1:
     if "metric_choice" not in st.session_state:
         st.session_state.metric_choice = "Close"
 
-    st.write("### 📊 Pilih Metrik")
+    st.write("# 📊 Pilih Metrik")
 
     # --- bikin tombol metrik dalam grid 3 kolom (rapat) ---
     for i in range(0, len(metrics), 3):
