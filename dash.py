@@ -115,7 +115,7 @@ with col2:
                 hovermode="x unified",
                 template="plotly_dark",
             )
-            with st.container(broder=True):
+            with st.container(border=True):
                 st.plotly_chart(fig, use_container_width=True)
 
             # --- Return (hanya harga) ---
