@@ -66,9 +66,10 @@ with col2:
             # --- Plot interaktif ---
             fig = go.Figure()
             for col in data.columns:
+                col_name = str(col)  # pastikan selalu string
                 fig.add_trace(go.Scatter(
-                    x=data.index, y=data[col], mode="lines", name=col,
-                    hovertemplate=col + "<br>Date: %{x|%Y-%m-%d}<br>Price: %{y:.2f}<extra></extra>"
+                    x=data.index, y=data[col], mode="lines", name=col_name,
+                    hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Price: %{y:.2f}<extra></extra>"
                 ))
 
             fig.update_layout(
