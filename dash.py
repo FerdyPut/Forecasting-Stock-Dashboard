@@ -12,34 +12,35 @@ st.title("📈 Stock Dashboard - Yahoo Finance")
 col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
 
 with col1:
+    with st.container(border=True):
     # --- Pilih ticker ---
-    tickers_list = [
-        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-        "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
-    ]
-    tickers = st.multiselect(
-        "Pilih saham:", 
-        tickers_list, 
-        default=["AAPL", "MSFT"]
-    )
+        tickers_list = [
+            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+            "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
+        ]
+        tickers = st.multiselect(
+            "Pilih saham:", 
+            tickers_list, 
+            default=["AAPL", "MSFT"]
+        )
 
-    # --- Pilih mode date ---
-    date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
+        # --- Pilih mode date ---
+        date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
 
-    if date_mode == "Time Horizon Cepat":
-        horizon_options = {
-            "1 Minggu": 7,
-            "1 Bulan": 30,
-            "3 Bulan": 90,
-            "6 Bulan": 180,
-            "1 Tahun": 365,
-            "5 Tahun": 365*5,
-            "10 Tahun": 365*10,
-            "20 Tahun": 365*20,
-        }
+        if date_mode == "Time Horizon Cepat":
+            horizon_options = {
+                "1 Minggu": 7,
+                "1 Bulan": 30,
+                "3 Bulan": 90,
+                "6 Bulan": 180,
+                "1 Tahun": 365,
+                "5 Tahun": 365*5,
+                "10 Tahun": 365*10,
+                "20 Tahun": 365*20,
+            }
 
-        if "time_choice" not in st.session_state:
-            st.session_state.time_choice = "1 Bulan"
+            if "time_choice" not in st.session_state:
+                st.session_state.time_choice = "1 Bulan"
 
         with st.container(border=True):
             st.write("##### ⏳ Time Horizon")
