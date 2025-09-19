@@ -62,22 +62,22 @@ with col1:
         start_date = st.date_input("Start Date", date(2010, 1, 1))
         end_date = st.date_input("End Date", date.today())
 
+    with st.container(border=True):
+        # --- Pilih metrik ---
+        metrics = ["Close", "Open", "High", "Low", "Volume"]
+        if "metric_choice" not in st.session_state:
+            st.session_state.metric_choice = "Close"
 
-    # --- Pilih metrik ---
-    metrics = ["Close", "Open", "High", "Low", "Volume"]
-    if "metric_choice" not in st.session_state:
-        st.session_state.metric_choice = "Close"
+        st.write("##### 📊 Pilih Metrik")
 
-    st.write("##### 📊 Pilih Metrik")
+        # --- bikin tombol metrik dalam grid 3 kolom (rapat) ---
+        for i in range(0, len(metrics), 3):
+            cols = st.columns([1, 1, 1, 0.2])
+            for j, m in enumerate(metrics[i:i+3]):
+                if cols[j].button(m, use_container_width=True):
+                    st.session_state.metric_choice = m
 
-    # --- bikin tombol metrik dalam grid 3 kolom (rapat) ---
-    for i in range(0, len(metrics), 3):
-        cols = st.columns([1, 1, 1, 0.2])
-        for j, m in enumerate(metrics[i:i+3]):
-            if cols[j].button(m, use_container_width=True):
-                st.session_state.metric_choice = m
-
-    st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
+        st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
 
 with col2:
     # --- Ambil data ---
