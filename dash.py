@@ -12,7 +12,7 @@ st.title("📈 Stock Dashboard - Yahoo Finance")
 col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
 
 with col1:
- with st.container():
+ with st.container(border=True):
     # --- Pilih ticker ---
     tickers_list = [
         "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
