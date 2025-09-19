@@ -81,7 +81,7 @@ with col1:
 
 with col2:
     # --- Ambil data ---
-    st.container(broder=True):
+    with st.container(broder=True):
         if tickers:
             data = yf.download(tickers, start=start_date, end=end_date)
 
