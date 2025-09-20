@@ -151,7 +151,7 @@ with col2:
                     st.metric(
                         label=f"Rata-rata Harga Saham ({metric_choice})",
                         value=f"{avg_prices.mean():.2f}",
-                        delta="dalam satuan Mata Uang"
+                        label="dalam satuan Mata Uang"
                     )
 
             with col2_s:
