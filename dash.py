@@ -4,15 +4,16 @@ import pandas as pd
 import plotly.graph_objs as go
 from datetime import date, timedelta
 
+# --- Page Config ---
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
-
 st.title("📈 Stock Dashboard - Yahoo Finance")
 
 # --- Layout 2 kolom ---
-col1, col2 = st.columns([1, 2])  # kiri kecil (input), kanan besar (grafik)
+col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
 
+# --- Kiri: Pilihan Input ---
 with col1:
-    with st.container(border=True):
+    with st.container():  # Streamlit tidak mendukung border=True secara default
         # --- Pilih ticker ---
         tickers_list = [
             "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
@@ -44,10 +45,10 @@ with col1:
 
             st.write("##### ⏳ Time Horizon")
 
-            # --- tombol dalam grid 3 kolom ---
+            # --- tombol grid 3 kolom ---
             options = list(horizon_options.keys())
             for i in range(0, len(options), 3):
-                cols = st.columns([1, 1, 1, 0.2])  # extra buffer
+                cols = st.columns([1,1,1,0.2])
                 for j, option in enumerate(options[i:i+3]):
                     if cols[j].button(option, use_container_width=True):
                         st.session_state.time_choice = option
@@ -59,28 +60,27 @@ with col1:
             st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**")
 
         else:  # Custom Date Range
-            start_date = st.date_input("Start Date", date(2010, 1, 1))
+            start_date = st.date_input("Start Date", date(2010,1,1))
             end_date = st.date_input("End Date", date.today())
 
-    with st.container(border=True):
-        # --- Pilih metrik ---
+    # --- Pilih Metric ---
+    with st.container():
         metrics = ["Close", "Open", "High", "Low", "Volume"]
         if "metric_choice" not in st.session_state:
             st.session_state.metric_choice = "Close"
 
         st.write("##### 📊 Pilih Metrik")
 
-        # --- bikin tombol metrik dalam grid 3 kolom (rapat) ---
         for i in range(0, len(metrics), 3):
-            cols = st.columns([1, 1, 1, 0.2])
+            cols = st.columns([1,1,1,0.2])
             for j, m in enumerate(metrics[i:i+3]):
                 if cols[j].button(m, use_container_width=True):
                     st.session_state.metric_choice = m
 
         st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
 
+# --- Kanan: Grafik & Data ---
 with col2:
-    # --- Ambil data ---
     if tickers:
         data = yf.download(tickers, start=start_date, end=end_date)
 
@@ -88,37 +88,34 @@ with col2:
             st.error("⚠️ Data tidak ditemukan untuk range ini.")
         else:
             fig = go.Figure()
-
             metric_choice = st.session_state.metric_choice
 
-            # --- Handle single vs multi ticker ---
             if len(tickers) == 1:
                 data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
             else:
                 data_metric = data[metric_choice]
 
-            # Normalisasi (kecuali volume)
+            # Normalisasi kecuali Volume
             if metric_choice != "Volume":
                 data_metric = data_metric / data_metric.iloc[0]
 
             for col in data_metric.columns:
-                col_name = str(col)
                 fig.add_trace(go.Scatter(
-                    x=data_metric.index, y=data_metric[col], mode="lines", name=col_name,
-                    hovertemplate=col_name + "<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
+                    x=data_metric.index, y=data_metric[col], mode="lines", name=str(col),
+                    hovertemplate=str(col)+"<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
                 ))
 
             fig.update_layout(
-                title=f"📊 Perbandingan {metric_choice} Saham",
+                title=f"📊 Perbandingan Harga {metric_choice} Saham",
                 xaxis_title="Date",
                 yaxis_title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
                 hovermode="x unified",
-                template="plotly_dark",
+                template="plotly_dark"
             )
-            with st.container(border=True):
-                st.plotly_chart(fig, use_container_width=True)
 
-            # --- Download ---
+            st.plotly_chart(fig, use_container_width=True)
+
+            # --- Download CSV ---
             csv = data.to_csv().encode("utf-8")
             st.download_button(
                 "⬇️ Download Data CSV",
@@ -127,6 +124,42 @@ with col2:
                 mime="text/csv"
             )
 
+            # --- Scorecard Summary ---
+            st.write("---")
+            st.write("### 📋 Summary Scorecards")
 
+            # Hitung rata-rata
+            avg_prices = data_metric.mean()
+            pct_change = ((data_metric.iloc[-1] - data_metric.iloc[0]) / data_metric.iloc[0]) * 100
+
+            highest_stock = avg_prices.idxmax()
+            highest_value = avg_prices.max()
+            highest_pct = pct_change[highest_stock]
+
+            lowest_stock = avg_prices.idxmin()
+            lowest_value = avg_prices.min()
+            lowest_pct = pct_change[lowest_stock]
+
+            col1_s, col2_s, col3_s = st.columns(3)
+
+            with col1_s:
+                st.metric(
+                    label=f"Rata-rata {metric_choice} Saham",
+                    value=f"{avg_prices.mean():.2f}"
+                )
+
+            with col2_s:
+                st.metric(
+                    label=f"Saham Tertinggi ({metric_choice})",
+                    value=f"{highest_stock} : {highest_value:.2f}",
+                    delta=f"{highest_pct:.2f}%"
+                )
+
+            with col3_s:
+                st.metric(
+                    label=f"Saham Terendah ({metric_choice})",
+                    value=f"{lowest_stock} : {lowest_value:.2f}",
+                    delta=f"{lowest_pct:.2f}%"
+                )
     else:
         st.warning("Silakan pilih minimal satu saham.")
