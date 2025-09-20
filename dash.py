@@ -166,50 +166,50 @@ with col2:
                 """, unsafe_allow_html=True
             )
 
-            # --- Scorecard Summary ---
+        # --- Scorecard Summary ---
 
-            # Hitung rata-rata per saham
-            
-            avg_prices = data_nonnormal.mean()
+        # Hitung rata-rata per saham
+        
+        avg_prices = data_nonnormal.mean()
 
-            # Persentase perubahan dari awal ke akhir
-            pct_change = ((data_nonnormal.iloc[-1] - data_nonnormal.iloc[0]) / data_nonnormal.iloc[0]) * 100
+        # Persentase perubahan dari awal ke akhir
+        pct_change = ((data_nonnormal.iloc[-1] - data_nonnormal.iloc[0]) / data_nonnormal.iloc[0]) * 100
 
-            # Saham tertinggi
-            highest_stock = avg_prices.idxmax()
-            highest_avg_value = avg_prices[highest_stock]
-            highest_pct = pct_change[highest_stock]
+        # Saham tertinggi
+        highest_stock = avg_prices.idxmax()
+        highest_avg_value = avg_prices[highest_stock]
+        highest_pct = pct_change[highest_stock]
 
-            # Saham terendah
-            lowest_stock = avg_prices.idxmin()
-            lowest_avg_value = avg_prices[lowest_stock]
-            lowest_pct = pct_change[lowest_stock]
+        # Saham terendah
+        lowest_stock = avg_prices.idxmin()
+        lowest_avg_value = avg_prices[lowest_stock]
+        lowest_pct = pct_change[lowest_stock]
 
 
-            col1_s, col2_s, col3_s = st.columns(3)
+        col1_s, col2_s, col3_s = st.columns(3)
 
-            with col1_s:
-                with st.container(border=True):
-                    st.metric(
-                        label=f"Rata-rata Harga Saham ({metric_choice})",
-                        value=f"{avg_prices.mean():.2f}"
-                    )
-                    st.caption("Nilai dalam satuan Mata Uang terkait")
+        with col1_s:
+            with st.container(border=True):
+                st.metric(
+                    label=f"Rata-rata Harga Saham ({metric_choice})",
+                    value=f"{avg_prices.mean():.2f}"
+                )
+                st.caption("Nilai dalam satuan Mata Uang terkait")
 
-            with col2_s:
-                with st.container(border=True):
-                    st.metric(
-                        label=f"Saham Tertinggi ({metric_choice})",
-                        value=f"{highest_stock} : {highest_avg_value:.2f}",
-                        delta=f"{highest_pct:.2f}%"
-                    )
+        with col2_s:
+            with st.container(border=True):
+                st.metric(
+                    label=f"Saham Tertinggi ({metric_choice})",
+                    value=f"{highest_stock} : {highest_avg_value:.2f}",
+                    delta=f"{highest_pct:.2f}%"
+                )
 
-            with col3_s:
-                with st.container(border=True):
-                    st.metric(
-                        label=f"Saham Terendah ({metric_choice})",
-                        value=f"{lowest_stock} : {lowest_avg_value:.2f}",
-                        delta=f"{lowest_pct:.2f}%"
-                    )
+        with col3_s:
+            with st.container(border=True):
+                st.metric(
+                    label=f"Saham Terendah ({metric_choice})",
+                    value=f"{lowest_stock} : {lowest_avg_value:.2f}",
+                    delta=f"{lowest_pct:.2f}%"
+                )
     else:
         st.warning("Silakan pilih minimal satu saham.")
