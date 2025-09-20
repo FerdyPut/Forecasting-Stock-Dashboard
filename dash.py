@@ -13,7 +13,7 @@ col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
 
 # --- Kiri: Pilihan Input ---
 with col1:
-    with st.container():  # Streamlit tidak mendukung border=True secara default
+    with st.container(border=True): # Streamlit tidak mendukung border=True secara default
         # --- Pilih ticker ---
         tickers_list = [
             "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
