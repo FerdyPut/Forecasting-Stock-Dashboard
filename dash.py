@@ -3,6 +3,7 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objs as go
 from datetime import date, timedelta
+import urllib.parse
 
 # --- Page Config ---
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
@@ -115,13 +116,51 @@ with col2:
             with st.container(border=True):
                 st.plotly_chart(fig, use_container_width=True)
 
-            # --- Download CSV ---
-            csv = data.to_csv().encode("utf-8")
-            st.download_button(
-                "⬇️ Download Data CSV",
-                data=csv,
-                file_name="stock_data.csv",
-                mime="text/csv"
+            # --- Download CSV dengan Hover Box ---
+            csv_string = data.to_csv(index=True)
+            csv_uri = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
+
+            st.markdown(
+                f"""
+                <style>
+                .hover-box {{
+                    border: 1px solid #444;
+                    border-radius: 10px;
+                    padding: 20px;
+                    text-align: center;
+                    background-color: #1e1e1e;
+                    color: white;
+                    transition: 0.3s;
+                    position: relative;
+                    margin-top: 15px;
+                }}
+                .hover-box:hover {{
+                    background-color: #333;
+                }}
+                .download-btn {{
+                    display: none;
+                    margin-top: 10px;
+                }}
+                .hover-box:hover .download-btn {{
+                    display: block;
+                }}
+                a.download-link {{
+                    color: white;
+                    text-decoration: none;
+                    padding: 5px 10px;
+                    background-color: #4CAF50;
+                    border-radius: 5px;
+                    font-weight: bold;
+                }}
+                </style>
+
+                <div class="hover-box">
+                    <strong>📥 Download Data CSV</strong>
+                    <div class="download-btn">
+                        <a class="download-link" href="{csv_uri}" download="stock_data.csv">⬇️ Download CSV</a>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True
             )
 
             # --- Scorecard Summary ---
