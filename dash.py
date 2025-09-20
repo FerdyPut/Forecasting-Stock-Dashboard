@@ -112,8 +112,8 @@ with col2:
                 hovermode="x unified",
                 template="plotly_dark"
             )
-
-            st.plotly_chart(fig, use_container_width=True)
+            with st.container(border=True):
+                st.plotly_chart(fig, use_container_width=True)
 
             # --- Download CSV ---
             csv = data.to_csv().encode("utf-8")
