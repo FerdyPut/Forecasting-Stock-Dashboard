@@ -135,7 +135,7 @@ with col2:
                     margin-top: 15px;
                 }}
                 .hover-box:hover {{
-                    background-color: #333;
+                    background-color: #151f33;
                 }}
                 .download-btn {{
                     display: none;
@@ -148,7 +148,7 @@ with col2:
                     color: white;
                     text-decoration: none;
                     padding: 5px 10px;
-                    background-color: #4CAF50;
+                    background-color: #615fff;
                     border-radius: 5px;
                     font-weight: bold;
                 }}
