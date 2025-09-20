@@ -155,7 +155,7 @@ with col2:
                 </style>
 
                 <div class="hover-box">
-                    <strong>Download Data CSV</strong>
+                    <strong>Download Data Saham</strong>
                     <div class="download-btn">
                         <a class="download-link" href="{csv_uri}" download="stock_data.csv">⬇️ Download CSV</a>
                     </div>
@@ -166,21 +166,22 @@ with col2:
 
             # --- Scorecard Summary ---
 
-            # Hitung rata-rata
+            # Hitung rata-rata per saham
             avg_prices = data_metric.mean()
+
+            # Persentase perubahan dari awal ke akhir
             pct_change = ((data_metric.iloc[-1] - data_metric.iloc[0]) / data_metric.iloc[0]) * 100
 
-            #Tertinggi
-
+            # Saham tertinggi
             highest_stock = avg_prices.idxmax()
-            highest_value = avg_prices.max()
+            highest_avg_value = avg_prices[highest_stock]
             highest_pct = pct_change[highest_stock]
 
-            #Terendah
-
+            # Saham terendah
             lowest_stock = avg_prices.idxmin()
-            lowest_value = avg_prices.min()
+            lowest_avg_value = avg_prices[lowest_stock]
             lowest_pct = pct_change[lowest_stock]
+
 
             col1_s, col2_s, col3_s = st.columns(3)
 
@@ -196,7 +197,7 @@ with col2:
                 with st.container(border=True):
                     st.metric(
                         label=f"Saham Tertinggi ({metric_choice})",
-                        value=f"{highest_stock} : {highest_value:.2f}",
+                        value=f"{highest_stock} : {highest_avg_value:.2f}",
                         delta=f"{highest_pct:.2f}%"
                     )
 
@@ -204,7 +205,7 @@ with col2:
                 with st.container(border=True):
                     st.metric(
                         label=f"Saham Terendah ({metric_choice})",
-                        value=f"{lowest_stock} : {lowest_value:.2f}",
+                        value=f"{lowest_stock} : {lowest_avg_value:.2f}",
                         delta=f"{lowest_pct:.2f}%"
                     )
     else:
