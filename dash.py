@@ -132,9 +132,13 @@ with col2:
             avg_prices = data_metric.mean()
             pct_change = ((data_metric.iloc[-1] - data_metric.iloc[0]) / data_metric.iloc[0]) * 100
 
+            #Tertinggi
+
             highest_stock = avg_prices.idxmax()
             highest_value = avg_prices.max()
             highest_pct = pct_change[highest_stock]
+
+            #Terendah
 
             lowest_stock = avg_prices.idxmin()
             lowest_value = avg_prices.min()
@@ -144,16 +148,17 @@ with col2:
 
             with col1_s:
                 st.metric(
-                    label=f"Rata-rata {metric_choice} Saham",
+                    label=f"Rata-rata Harga {metric_choice} Saham",
                     value=f"{avg_prices.mean():.2f}"
                 )
 
             with col2_s:
-                st.metric(
-                    label=f"Saham Tertinggi ({metric_choice})",
-                    value=f"{highest_stock} : {highest_value:.2f}",
-                    delta=f"{highest_pct:.2f}%"
-                )
+                with st.container(border=True):
+                    st.metric(
+                        label=f"Saham Tertinggi ({metric_choice})",
+                        value=f"{highest_stock} : {highest_value:.2f}",
+                        delta=f"{highest_pct:.2f}%"
+                    )
 
             with col3_s:
                 st.metric(
