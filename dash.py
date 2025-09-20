@@ -149,8 +149,9 @@ with col2:
             with col1_s:
                 with st.container(border=True):
                     st.metric(
-                        label=f"Rata-rata Harga {metric_choice} Saham",
-                        value=f"{avg_prices.mean():.2f}"
+                        label=f"Rata-rata Harga Saham ({metric_choice})",
+                        value=f"{avg_prices.mean():.2f}",
+                        delta="dalam satuan Mata Uang"
                     )
 
             with col2_s:
