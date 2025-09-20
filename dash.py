@@ -118,12 +118,6 @@ with col2:
             with st.container(border=True):
                 st.plotly_chart(fig, use_container_width=True)
 
-            # --- Return (hanya harga) ---
-            if metric_choice != "Volume":
-                returns = (data_metric.iloc[-1] / data_metric.iloc[0] - 1) * 100
-                st.subheader("📋 Persentase Return (%)")
-                st.dataframe(returns.sort_values(ascending=False).round(2))
-
             # --- Download ---
             csv = data.to_csv().encode("utf-8")
             st.download_button(
@@ -132,5 +126,7 @@ with col2:
                 file_name="stock_data.csv",
                 mime="text/csv"
             )
+
+
     else:
         st.warning("Silakan pilih minimal satu saham.")
