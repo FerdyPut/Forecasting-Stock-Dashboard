@@ -124,7 +124,7 @@ with col2:
                 f"""
                 <style>
                 .hover-box {{
-                    border: 1px solid #444;
+                    border: 1px solid #151f33;
                     border-radius: 10px;
                     padding: 20px;
                     text-align: center;
