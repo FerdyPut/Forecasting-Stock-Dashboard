@@ -125,8 +125,6 @@ with col2:
             )
 
             # --- Scorecard Summary ---
-            st.write("---")
-            st.write("### 📋 Summary Scorecards")
 
             # Hitung rata-rata
             avg_prices = data_metric.mean()
