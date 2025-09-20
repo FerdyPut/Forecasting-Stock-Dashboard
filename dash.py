@@ -150,9 +150,9 @@ with col2:
                 with st.container(border=True):
                     st.metric(
                         label=f"Rata-rata Harga Saham ({metric_choice})",
-                        value=f"{avg_prices.mean():.2f}",
-                        label="dalam satuan Mata Uang"
+                        value=f"{avg_prices.mean():.2f}"
                     )
+                    st.caption("Nilai dalam satuan USD")
 
             with col2_s:
                 with st.container(border=True):
