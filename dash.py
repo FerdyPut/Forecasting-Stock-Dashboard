@@ -97,6 +97,8 @@ with col2:
                 data_metric = data[metric_choice]
 
             # Normalisasi kecuali Volume
+            data_nonnormal = data_metric.copy()
+
             if metric_choice != "Volume":
                 data_metric = data_metric / data_metric.iloc[0]
 
@@ -167,10 +169,11 @@ with col2:
             # --- Scorecard Summary ---
 
             # Hitung rata-rata per saham
-            avg_prices = data_metric.mean()
+            
+            avg_prices = data_nonnormal.mean()
 
             # Persentase perubahan dari awal ke akhir
-            pct_change = ((data_metric.iloc[-1] - data_metric.iloc[0]) / data_metric.iloc[0]) * 100
+            pct_change = ((data_nonnormal.iloc[-1] - data_nonnormal.iloc[0]) / data_nonnormal.iloc[0]) * 100
 
             # Saham tertinggi
             highest_stock = avg_prices.idxmax()
