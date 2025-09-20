@@ -155,11 +155,12 @@ with col2:
                 </style>
 
                 <div class="hover-box">
-                    <strong>📥 Download Data CSV</strong>
+                    <strong>Download Data CSV</strong>
                     <div class="download-btn">
-                        <a class="download-link" href="{csv_uri}" download="stock_data.csv">⬇️</a>
+                        <a class="download-link" href="{csv_uri}" download="stock_data.csv">⬇️ Download CSV</a>
                     </div>
                 </div>
+                <p></p>
                 """, unsafe_allow_html=True
             )
 
