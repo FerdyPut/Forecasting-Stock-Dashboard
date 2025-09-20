@@ -147,10 +147,11 @@ with col2:
             col1_s, col2_s, col3_s = st.columns(3)
 
             with col1_s:
-                st.metric(
-                    label=f"Rata-rata Harga {metric_choice} Saham",
-                    value=f"{avg_prices.mean():.2f}"
-                )
+                with st.container(border=True):
+                    st.metric(
+                        label=f"Rata-rata Harga {metric_choice} Saham",
+                        value=f"{avg_prices.mean():.2f}"
+                    )
 
             with col2_s:
                 with st.container(border=True):
@@ -161,10 +162,11 @@ with col2:
                     )
 
             with col3_s:
-                st.metric(
-                    label=f"Saham Terendah ({metric_choice})",
-                    value=f"{lowest_stock} : {lowest_value:.2f}",
-                    delta=f"{lowest_pct:.2f}%"
-                )
+                with st.container(border=True):
+                    st.metric(
+                        label=f"Saham Terendah ({metric_choice})",
+                        value=f"{lowest_stock} : {lowest_value:.2f}",
+                        delta=f"{lowest_pct:.2f}%"
+                    )
     else:
         st.warning("Silakan pilih minimal satu saham.")
