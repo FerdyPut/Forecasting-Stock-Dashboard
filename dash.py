@@ -130,7 +130,7 @@ with col2:
                     border-radius: 10px;
                     padding: 20px;
                     text-align: center;
-                    background-color: #1e1e1e;
+                    background-color: #151f33;
                     color: white;
                     transition: 0.3s;
                     position: relative;
