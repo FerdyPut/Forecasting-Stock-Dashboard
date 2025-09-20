@@ -7,7 +7,7 @@ import urllib.parse
 
 # --- Page Config ---
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
-st.title("📈 Stock Dashboard - Yahoo Finance")
+st.title("📈 Dynamic Stock Dashboard")
 
 # --- Layout 2 kolom ---
 col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
