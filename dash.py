@@ -255,14 +255,16 @@ with col1:
             )
         )
 
-        # --- Tambahin Label ---
+        # --- Label di dalam bar ---
         text = (
             alt.Chart(df_bar)
             .mark_text(
-                align="left",  # posisi kiri
+                align="left",
                 baseline="middle",
-                dx=3,  # jarak dari bar
-                color="white"  # biar kontras
+                dx=3,
+                color="white",
+                font="Cambria",     # <<< Jenis font Cambria
+                fontSize=12
             )
             .encode(
                 x=f"Harga {metric_choice}:Q",
@@ -274,7 +276,24 @@ with col1:
         # --- Combine ---
         chart = (bar + text).properties(height=400)
 
+        # --- Global font config ---
+        chart = chart.configure_axis(
+            labelFont="Cambria",
+            titleFont="Cambria",
+            labelFontSize=12,
+            titleFontSize=14
+        ).configure_title(
+            font="Cambria",
+            fontSize=16
+        ).configure_legend(
+            labelFont="Cambria",
+            titleFont="Cambria",
+            labelFontSize=12,
+            titleFontSize=14
+        )
+
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
