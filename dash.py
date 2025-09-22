@@ -91,8 +91,29 @@ with col1:
             st.session_state.metric_choice = "Close"
 
         st.write("📊 Pilih Metrik")
-        st.markdown("Pemilihan metrik ini merupakan jenis harga saham yang dianalisis, seperti Open, High, Low, Close, maupun Volume. Dengan menentukan metrik yang tepat, pengguna dapat memahami dinamika pasar dari sudut pandang yang berbeda")
-
+        st.markdown(
+            """
+            <style>
+            .custom-text {
+                text-align: justify;
+                font-family: 'Poppins', sans-serif;
+                font-size: 15px;
+                color: #ffffff;
+                transition: 0.3s ease-in-out;
+            }
+            .custom-text:hover {
+                color: #cd4d4d;
+                transform: scale(1.01);
+            }
+            </style>
+            <div class="custom-text">
+                Pemilihan metrik menentukan sudut pandang analisis, apakah harga pembukaan, 
+                tertinggi, terendah, penutupan, maupun volume. Dengan memilih metrik yang sesuai, 
+                dinamika pasar dapat dipahami secara lebih jelas.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         for i in range(0, len(metrics), 3):
             cols = st.columns([1,1,1,0.2])
             for j, m in enumerate(metrics[i:i+3]):
