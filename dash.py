@@ -245,7 +245,7 @@ with col2:
                     st.metric(
                         label=f"Rata-rata Harga Saham ({metric_choice})",
                         value=f"{avg_prices.mean():.2f}",
-                        delta=f"\u200B IDR, USD, etc.",
+                        delta="\u200B IDR, USD, etc.",
                         delta_color = "off"
                     )
                     st.caption("Nilai dalam satuan Mata Uang terkait")
