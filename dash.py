@@ -211,10 +211,7 @@ with col2:
                 </style>
 
                 <div class="hover-box">
-                    <strong>Download Data Saham</strong>
-                    <div class="download-btn">
-                        <a class="download-link" href="{csv_uri}" download="stock_data.csv">Analytics</a>
-                    </div>
+                    <strong>Analytics</strong>
                 </div>
                 <p></p>
                 """, unsafe_allow_html=True
