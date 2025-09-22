@@ -242,12 +242,35 @@ with col2:
 
             with col1_s:
                 with st.container(border=True):
-                    st.metric(
-                        label=f"Rata-rata Harga Saham ({metric_choice})",
-                        value=f"{avg_prices.mean():.2f}",
-                        delta=f"Wow"
-                    )
-                    st.caption("Nilai dalam satuan Mata Uang terkait")
+                    st.markdown(f"""
+                    <div style="
+                        font-family: 'Poppins', sans-serif;
+                        font-size: 14px;
+                        margin-bottom: 4px;
+                    ">
+                        Rata-rata Harga Saham ({metric_choice})
+                    </div>
+                    <div style="
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 6px;
+                    ">
+                        {avg_prices.mean():.2f}
+                    </div>
+                    <span style="
+                        background-color: #615fff;
+                        color: white;
+                        padding: 3px 8px;
+                        border-radius: 8px;
+                        font-size: 12px;
+                        font-weight: 600;
+                    ">
+                        WOW
+                    </span>
+                    <div style="font-size: 12px; color: gray; margin-top: 4px;">
+                        Nilai dalam satuan Mata Uang terkait
+                    </div>
+                    """, unsafe_allow_html=True)
 
             with col2_s:
                 with st.container(border=True):
