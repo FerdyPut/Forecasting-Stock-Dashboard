@@ -255,7 +255,9 @@ with col2:
                         value=f"{highest_stock} : {highest_avg_value:.2f}",
                         delta=f"{highest_pct:.2f}%"
                     )
-                    st.badge(f"Berdasarkan Harga {metric_choice}")
+
+                    st.caption("Nilai dalam satuan Mata Uang terkait")
+
 
             with col3_s:
                 with st.container(border=True):
