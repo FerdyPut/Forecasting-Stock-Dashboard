@@ -141,7 +141,7 @@ with col2:
                     )
                     .properties(
                         title=f"📊 Perbandingan Harga {metric_choice} Saham",
-                        height=500
+                        height=200
                     )
                     .configure_axis(
                         labelFont="Poppins",
