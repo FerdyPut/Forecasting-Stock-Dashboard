@@ -141,6 +141,7 @@ with col2:
                 )
 
                 # --- Line chart Altair ---
+                st.write(f"### 📊 Perbandingan Harga {metric_choice} Saham")
                 chart = (
                     alt.Chart(df_long)
                     .mark_line()
@@ -153,10 +154,6 @@ with col2:
                         ),
                         color=alt.Color("Saham:N", title="Saham"),
                         tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
-                    )
-                    .properties(
-                        title=f"### 📊 Perbandingan Harga {metric_choice} Saham",
-                        height=480
                     )
                     .configure_axis(
                         labelFont="Poppins",
