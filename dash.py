@@ -181,14 +181,14 @@ with col2:
                 <style>
                 .hover-box {{
                     border: 1px solid #151f33;
-                    border-radius: 500px;
+                    border-radius: 10px;
                     padding: 20px;
                     text-align: center;
                     background-color: #151f33;
                     color: white;
                     transition: 0.3s;
                     position: relative;
-                    margin-top: 15px;
+                    margin-top: 150px;
                 }}
                 .hover-box:hover {{
                     background-color: #151f33;
