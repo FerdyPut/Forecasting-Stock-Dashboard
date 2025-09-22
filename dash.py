@@ -155,7 +155,7 @@ with col2:
                         tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
                     )
                     .properties(
-                        title=f"📊 Perbandingan Harga {metric_choice} Saham",
+                        title=f"### 📊 Perbandingan Harga {metric_choice} Saham",
                         height=480
                     )
                     .configure_axis(
