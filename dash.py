@@ -102,7 +102,7 @@ with col1:
                 transition: 0.3s ease-in-out;
             }
             .custom-text:hover {
-                color: #cd4d4d;
+                color: #B0A5E6;
                 transform: scale(1.01);
             }
             </style>
