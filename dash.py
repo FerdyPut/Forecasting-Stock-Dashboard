@@ -232,26 +232,27 @@ with col2:
         st.warning("Silakan pilih minimal satu saham.")
 
 with col1:
-    st.write(f"## Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
-    # --- Horizontal Bar Chart Top 10 Saham ---
-    top5_stocks = avg_prices.sort_values(ascending=False).head(10)
+    with st.container(border=True):
+            st.write(f"## Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
+            # --- Horizontal Bar Chart Top 10 Saham ---
+            top5_stocks = avg_prices.sort_values(ascending=False).head(10)
 
-    fig_barh = go.Figure(go.Bar(
-        x=top5_stocks.values,      # sumbu X = nilai
-        y=top5_stocks.index,       # sumbu Y = nama saham
-        text=[f"{v:.2f}" for v in top5_stocks.values],
-        textposition='auto',
-        orientation='h',           # ini bikin horizontal
-        marker=dict(color='#091a30')
-    ))
+            fig_barh = go.Figure(go.Bar(
+                x=top5_stocks.values,      # sumbu X = nilai
+                y=top5_stocks.index,       # sumbu Y = nama saham
+                text=[f"{v:.2f}" for v in top5_stocks.values],
+                textposition='auto',
+                orientation='h',           # ini bikin horizontal
+                marker=dict(color='#091a30')
+            ))
 
-    fig_barh.update_layout(
-        xaxis_title=metric_choice,
-        yaxis_title="Saham",
-        template="plotly_dark",
-        yaxis=dict(
-            categoryorder="total ascending"   # <<< bikin urut sesuai nilai
-        )
-    )
+            fig_barh.update_layout(
+                xaxis_title=metric_choice,
+                yaxis_title="Saham",
+                template="plotly_dark",
+                yaxis=dict(
+                    categoryorder="total ascending"   # <<< bikin urut sesuai nilai
+                )
+            )
 
-    st.plotly_chart(fig_barh, use_container_width=True)
+            st.plotly_chart(fig_barh, use_container_width=True)
