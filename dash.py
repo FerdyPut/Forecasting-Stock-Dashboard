@@ -39,7 +39,7 @@ with col1:
             "NCKL.JK", "FREN.JK", "ISAT.JK", "TPIA.JK", "INDY.JK", "ARTO.JK"
         ]
         tickers = st.multiselect(
-            "Pilih saham:", 
+            "Pilih Saham:", 
             tickers_list, 
             default=["BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK",
             "ICBP.JK", "INDF.JK", "SMGR.JK", "KLBF.JK", "BBNI.JK", "BRIS.JK"]
