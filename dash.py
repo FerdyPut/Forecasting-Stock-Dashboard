@@ -234,6 +234,10 @@ with col2:
         st.warning("Silakan pilih minimal satu saham.")
 
 
+# --- Load Google Fonts: Poppins ---
+st.markdown("""
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+""", unsafe_allow_html=True)
 
 with col1:
     with st.container(border=True):
@@ -255,7 +259,7 @@ with col1:
             )
         )
 
-        # --- Label di dalam bar ---
+        # --- Label di bar ---
         text = (
             alt.Chart(df_bar)
             .mark_text(
@@ -263,7 +267,7 @@ with col1:
                 baseline="middle",
                 dx=3,
                 color="white",
-                font="Cambria",     # <<< Jenis font Cambria
+                font="Poppins",     # <<< ganti font label
                 fontSize=12
             )
             .encode(
@@ -276,18 +280,18 @@ with col1:
         # --- Combine ---
         chart = (bar + text).properties(height=400)
 
-        # --- Global font config ---
+        # --- Global Font Config ---
         chart = chart.configure_axis(
-            labelFont="Cambria",
-            titleFont="Cambria",
+            labelFont="Poppins",
+            titleFont="Poppins",
             labelFontSize=12,
             titleFontSize=14
         ).configure_title(
-            font="Cambria",
+            font="Poppins",
             fontSize=16
         ).configure_legend(
-            labelFont="Cambria",
-            titleFont="Cambria",
+            labelFont="Poppins",
+            titleFont="Poppins",
             labelFontSize=12,
             titleFontSize=14
         )
