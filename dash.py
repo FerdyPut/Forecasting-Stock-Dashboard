@@ -244,18 +244,40 @@ with col1:
         df_bar = top10_stocks.reset_index()
         df_bar.columns = ["Saham", f"Harga {metric_choice}"]
 
-        # --- Altair Chart ---
-        chart = (
+        # --- Base Chart ---
+        bar = (
             alt.Chart(df_bar)
-            .mark_bar(color="#c94d4d")  # 1 warna aja
+            .mark_bar(color="#c94d4d")
             .encode(
                 x=alt.X(f"Harga {metric_choice}:Q", title=f"Harga {metric_choice}"),
-                y=alt.Y("Saham:N", sort="-x", title="Saham"),  # sort biar dari terbesar ke kecil
+                y=alt.Y("Saham:N", sort="-x", title="Saham"),
                 tooltip=["Saham", f"Harga {metric_choice}"]
             )
-            .properties(height=400)
         )
 
+        # --- Tambahin Label ---
+        text = (
+            alt.Chart(df_bar)
+            .mark_text(
+                align="left",  # posisi kiri
+                baseline="middle",
+                dx=3,  # jarak dari bar
+                color="white"  # biar kontras
+            )
+            .encode(
+                x=f"Harga {metric_choice}:Q",
+                y="Saham:N",
+                text=alt.Text(f"Harga {metric_choice}:Q", format=",.2f")
+            )
+        )
+
+        # --- Combine ---
+        chart = (bar + text).properties(height=400)
+
         st.altair_chart(chart, use_container_width=True)
+
+        # --- Tambah tabel data ---
+        st.dataframe(df_bar, use_container_width=True, height=300)
+
 
 
