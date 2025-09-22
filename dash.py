@@ -235,16 +235,18 @@ fig_barh.update_layout(
     template="plotly_dark"
 )
 
-fig_barh = go.Figure(go.Bar(
-    x=top5_stocks.values,
-    y=top5_stocks.index,
-    text=[f"{v:.2f}" for v in top5_stocks.values],
-    textposition='auto',
-    orientation='h',
-    marker=dict(
-        color='dodgerblue',
-        line=dict(color='black', width=0)  # outline bisa dimatikan
-    )
-))
+fig = go.Figure()
+
+for i, (stock, value) in enumerate(top5_stocks.items()):
+    y0, y1 = i-0.4, i+0.4
+    x0, x1 = 0, value
+    r = 0.2  # radius
+    
+    # Buat path rounded rectangle pakai bezier (agak panjang)
+    path = f'M {x0+r},{y0} H{x1-r} Q{x1},{y0} {x1},{y0+r} V{y1-r} Q{x1},{y1} {x1-r},{y1} H{x0+r} Q{x0},{y1} {x0},{y1-r} V{y0+r} Q{x0},{y0} {x0+r},{y0} Z'
+    
+    fig.add_shape(type="path", path=path, fillcolor="dodgerblue", line=dict(width=0))
+    fig.add_trace(go.Scatter(x=[value], y=[stock], text=[f"{value:.2f}"], mode="text"))
+    
 st.plotly_chart(fig_barh, use_container_width=True)
 
