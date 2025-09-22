@@ -213,7 +213,7 @@ with col2:
                 <div class="hover-box">
                     <strong>Download Data Saham</strong>
                     <div class="download-btn">
-                        <a class="download-link" href="{csv_uri}" download="stock_data.csv">⬇️ Download CSV</a>
+                        <a class="download-link" href="{csv_uri}" download="stock_data.csv">Analytics</a>
                     </div>
                 </div>
                 <p></p>
