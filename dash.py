@@ -91,6 +91,7 @@ with col1:
             st.session_state.metric_choice = "Close"
 
         st.write("📊 Pilih Metrik")
+        st.markdown("Pemilihan metrik ini merupakan jenis harga saham yang dianalisis, seperti Open, High, Low, Close, maupun Volume. Dengan menentukan metrik yang tepat, pengguna dapat memahami dinamika pasar dari sudut pandang yang berbeda")
 
         for i in range(0, len(metrics), 3):
             cols = st.columns([1,1,1,0.2])
