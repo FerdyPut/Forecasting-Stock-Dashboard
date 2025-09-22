@@ -233,8 +233,10 @@ with col1:
     fig_barh.update_layout(
         xaxis_title=metric_choice,
         yaxis_title="Saham",
-        template="plotly_dark"
+        template="plotly_dark",
+        yaxis=dict(
+            categoryorder="total ascending"   # <<< bikin urut sesuai nilai
+        )
     )
-
 
     st.plotly_chart(fig_barh, use_container_width=True)
