@@ -180,11 +180,11 @@ with col2:
                 f"""
                 <style>
                 .hover-box {{
-                    border: 1px solid #151f33;
+                    border: 1px solid #5b4699;
                     border-radius: 10px;
                     padding: 5px;
                     text-align: center;
-                    background-color: #151f33;
+                    background-color: #5b4699;
                     color: white;
                     transition: 0.3s;
                     position: relative;
@@ -192,7 +192,7 @@ with col2:
                     font-size: 18px;
                 }}
                 .hover-box:hover {{
-                    background-color: #151f33;
+                    background-color: #5b4699;
                 }}
                 .download-btn {{
                     display: none;
