@@ -189,7 +189,7 @@ with col2:
                     transition: 0.3s;
                     position: relative;
                     margin-top: 1px;
-                    font-size: 100px;
+                    font-size: 20px;
                 }}
                 .hover-box:hover {{
                     background-color: #151f33;
