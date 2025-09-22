@@ -214,3 +214,23 @@ with col2:
     else:
         st.warning("Silakan pilih minimal satu saham.")
 
+# --- Bar Chart Top 5 Saham ---
+top5_stocks = avg_prices.sort_values(ascending=False).head(5)
+
+fig_bar = go.Figure(go.Bar(
+    x=top5_stocks.index,
+    y=top5_stocks.values,
+    text=[f"{v:.2f}" for v in top5_stocks.values],
+    textposition='auto',
+    marker_color='mediumslateblue'
+))
+
+fig_bar.update_layout(
+    title=f"📊 Top 5 Saham Berdasarkan {metric_choice}",
+    xaxis_title="Saham",
+    yaxis_title=metric_choice,
+    template="plotly_dark"
+)
+
+st.plotly_chart(fig_bar, use_container_width=True)
+
