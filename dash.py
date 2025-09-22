@@ -108,35 +108,56 @@ with col2:
         if data.empty:
             st.error("⚠️ Data tidak ditemukan untuk range ini.")
         else:
-            fig = go.Figure()
-            metric_choice = st.session_state.metric_choice
-
-            if len(tickers) == 1:
-                data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
-            else:
-                data_metric = data[metric_choice]
-
-            # Normalisasi kecuali Volume
-            data_nonnormal = data_metric.copy()
-
-            if metric_choice != "Volume":
-                data_metric = data_metric / data_metric.iloc[0]
-
-            for col in data_metric.columns:
-                fig.add_trace(go.Scatter(
-                    x=data_metric.index, y=data_metric[col], mode="lines", name=str(col),
-                    hovertemplate=str(col)+"<br>Date: %{x|%Y-%m-%d}<br>Value: %{y:.2f}<extra></extra>"
-                ))
-
-            fig.update_layout(
-                title=f"📊 Perbandingan Harga {metric_choice} Saham",
-                xaxis_title="Date",
-                yaxis_title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
-                hovermode="x unified",
-                template="plotly_dark"
-            )
             with st.container(border=True):
-                st.plotly_chart(fig, use_container_width=True)
+                metric_choice = st.session_state.metric_choice
+
+                # --- Pilih data sesuai metric ---
+                if len(tickers) == 1:
+                    data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+                else:
+                    data_metric = data[metric_choice]
+
+                # --- Simpan data asli (untuk tabel/opsi lain) ---
+                data_nonnormal = data_metric.copy()
+
+                # --- Normalisasi (kecuali Volume) ---
+                if metric_choice != "Volume":
+                    data_metric = data_metric / data_metric.iloc[0]
+
+                # --- Reshape ke long format untuk Altair ---
+                df_long = data_metric.reset_index().melt(
+                    id_vars="Date", var_name="Saham", value_name="Value"
+                )
+
+                # --- Line chart Altair ---
+                chart = (
+                    alt.Chart(df_long)
+                    .mark_line()
+                    .encode(
+                        x=alt.X("Date:T", title="Date"),
+                        y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
+                        color=alt.Color("Saham:N", title="Saham"),
+                        tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
+                    )
+                    .properties(
+                        title=f"📊 Perbandingan Harga {metric_choice} Saham",
+                        height=500
+                    )
+                    .configure_axis(
+                        labelFont="Poppins",
+                        titleFont="Poppins"
+                    )
+                    .configure_title(
+                        font="Poppins",
+                        fontSize=16
+                    )
+                    .configure_legend(
+                        labelFont="Poppins",
+                        titleFont="Poppins"
+                    )
+                )
+
+                st.altair_chart(chart, use_container_width=True)
 
             # --- Download CSV dengan Hover Box ---
             csv_string = data.to_csv(index=True)
