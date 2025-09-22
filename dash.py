@@ -238,29 +238,10 @@ with col1:
         # --- Ambil Top 10 ---
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
 
-        # --- Horizontal Bar Chart ---
-        fig_barh = go.Figure(go.Bar(
-            x=top10_stocks.values,
-            y=top10_stocks.index,
-            text=[f"{v:.2f}" for v in top10_stocks.values],
-            textposition='auto',
-            orientation='h',
-            marker=dict(color='#c94d4d')
-        ))
+        # --- Biar horizontal: transpose dataframe ---
+        df_bar = top10_stocks.to_frame(name=f"Harga {metric_choice}").T
 
-        fig_barh.update_layout(
-            xaxis_title=metric_choice,
-            yaxis_title="Saham",
-            template="plotly_dark",
-            yaxis=dict(categoryorder="total ascending"),
-            height=500
-        )
-
-        # 👉 Chart dengan tombol "Show data"
-        st.plotly_chart(
-            fig_barh,
-            use_container_width=True,
-            config={"displayModeBar": True}  # pastikan modebar aktif
-        )
+        # --- Native Streamlit bar chart ---
+        st.bar_chart(df_bar, use_container_width=True)
 
 
