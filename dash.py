@@ -247,7 +247,7 @@ with col1:
         # --- Base Chart ---
         bar = (
             alt.Chart(df_bar)
-            .mark_bar(color="#c28f8c")
+            .mark_bar(color="#cd4d4d")
             .encode(
                 x=alt.X(f"Harga {metric_choice}:Q", title=f"Harga {metric_choice}"),
                 y=alt.Y("Saham:N", sort="-x", title="Saham"),
