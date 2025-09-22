@@ -11,16 +11,6 @@ import altair as alt
 
 # --- Page Config ---
 
-# --- Load Google Fonts ---
-st.markdown("""
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        html, body, [class*="css"]  {
-            font-family: 'Poppins';
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("📈 Dynamic Stock Dashboard")
 
