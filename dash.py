@@ -81,7 +81,7 @@ with col1:
                     st.session_state.metric_choice = m
 
         st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
-
+        st.write("## Bar Chart dari Top 5 Saham dengan Harga {metric_choice} Tertinggi")
 # --- Kanan: Grafik & Data ---
 with col2:
     if tickers:
