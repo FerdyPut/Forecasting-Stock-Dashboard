@@ -258,7 +258,4 @@ with col1:
 
         st.altair_chart(chart, use_container_width=True)
 
-        # --- Tambah tabel data ---
-        st.dataframe(df_bar, use_container_width=True, height=300)
-
 
