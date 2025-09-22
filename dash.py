@@ -98,7 +98,7 @@ with col1:
                 if cols[j].button(m, use_container_width=True):
                     st.session_state.metric_choice = m
 
-        st.badge(f"📌 Metrik aktif: **{st.session_state.metric_choice}**", color="violet")
+        st.badge(f"📌 Metrik aktif: **{st.session_state.metric_choice}**", color="white")
 
 # --- Kanan: Grafik & Data ---
 with col2:
