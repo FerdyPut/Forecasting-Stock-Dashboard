@@ -231,7 +231,6 @@ with col1:
     ))
 
     fig_barh.update_layout(
-        title=f"📊 Top 5 Saham Berdasarkan {metric_choice}",
         xaxis_title=metric_choice,
         yaxis_title="Saham",
         template="plotly_dark"
