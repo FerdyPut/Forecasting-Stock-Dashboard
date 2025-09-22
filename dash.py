@@ -181,7 +181,7 @@ with col2:
                 <style>
                 .hover-box {{
                     border: 1px solid #151f33;
-                    border-radius: 5px;
+                    border-radius: 500px;
                     padding: 20px;
                     text-align: center;
                     background-color: #151f33;
