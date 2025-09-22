@@ -225,7 +225,7 @@ fig_barh = go.Figure(go.Bar(
     text=[f"{v:.2f}" for v in top5_stocks.values],
     textposition='auto',
     orientation='h',           # ini bikin horizontal
-    marker=dict(color='mediumslateblue')
+    marker=dict(color='#091a30')
 ))
 
 fig_barh.update_layout(
