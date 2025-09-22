@@ -237,7 +237,7 @@ with col2:
 
 with col1:
     with st.container(border=True):
-        st.write(f"## 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
+        st.write(f"### 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
         # --- Ambil Top 10 ---
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
@@ -275,9 +275,6 @@ with col1:
         chart = (bar + text).properties(height=400)
 
         st.altair_chart(chart, use_container_width=True)
-
-        # --- Tambah tabel data ---
-        st.dataframe(df_bar, use_container_width=True, height=300)
 
 
 
