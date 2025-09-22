@@ -188,7 +188,7 @@ with col2:
                     color: white;
                     transition: 0.3s;
                     position: relative;
-                    margin-top: 5px;
+                    margin-top: 1px;
                 }}
                 .hover-box:hover {{
                     background-color: #151f33;
