@@ -256,14 +256,11 @@ with col1:
             height=500
         )
 
-        st.plotly_chart(fig_barh, use_container_width=True)
-
-        # --- Tambah tabel data ---
-        st.dataframe(
-            top10_stocks.reset_index().rename(
-                columns={"index": "Saham", 0: f"Harga {metric_choice}"}
-            ),
+        # 👉 Chart dengan tombol "Show data"
+        st.plotly_chart(
+            fig_barh,
             use_container_width=True,
-            height=300
+            config={"displayModeBar": True}  # pastikan modebar aktif
         )
+
 
