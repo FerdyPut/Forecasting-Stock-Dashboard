@@ -216,27 +216,24 @@ with col2:
     else:
         st.warning("Silakan pilih minimal satu saham.")
 
-# --- Bar Chart Top 5 Saham dengan Seaborn ---
-top5_stocks = avg_prices.sort_values(ascending=False).head(5).reset_index()
-top5_stocks.columns = ["Ticker", "AveragePrice"]
+# --- Column Chart Top 5 Saham ---
+top5_stocks = avg_prices.sort_values(ascending=False).head(5)
 
-plt.figure(figsize=(8,5))
-sns.set_theme(style="whitegrid")
+fig_col = go.Figure(go.Bar(
+    x=top5_stocks.index,       # sumbu X = nama saham
+    y=top5_stocks.values,      # sumbu Y = nilai rata-rata
+    text=[f"{v:.2f}" for v in top5_stocks.values],
+    textposition='outside',    # label di atas bar
+    marker=dict(color='mediumslateblue')
+))
 
-ax = sns.barplot(
-    data=top5_stocks,
-    x="Ticker", 
-    y="AveragePrice", 
-    palette="viridis"  # bisa ganti: "Blues_d", "magma", dll
+fig_col.update_layout(
+    title=f"📊 Top 5 Saham Berdasarkan {metric_choice}",
+    xaxis_title="Saham",
+    yaxis_title=metric_choice,
+    template="plotly_dark",
+    yaxis=dict(showgrid=True),
+    xaxis=dict(showgrid=False)
 )
 
-# Tambahin label di atas bar
-for i, v in enumerate(top5_stocks["AveragePrice"]):
-    ax.text(i, v + (v*0.01), f"{v:.2f}", ha="center", va="bottom", fontweight="bold")
-
-ax.set_title(f"📊 Top 5 Saham Berdasarkan {metric_choice}", fontsize=14, fontweight="bold")
-ax.set_xlabel("Saham")
-ax.set_ylabel(f"Rata-rata {metric_choice}")
-
-st.pyplot(plt)
-
+st.plotly_chart(fig_col, use_container_width=True)
