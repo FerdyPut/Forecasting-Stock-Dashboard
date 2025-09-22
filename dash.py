@@ -242,6 +242,6 @@ with col1:
         df_bar = top10_stocks.to_frame(name=f"Harga {metric_choice}").T
 
         # --- Native Streamlit bar chart ---
-        st.bar_chart(df_bar, use_container_width=True)
+        st.bar_chart(df_bar, use_container_width=True, horizontal=True)
 
 
