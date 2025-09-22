@@ -96,7 +96,6 @@ with col1:
                     st.session_state.metric_choice = m
 
         st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
-    st.write(f"## Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
 # --- Kanan: Grafik & Data ---
 with col2:
@@ -233,6 +232,7 @@ with col2:
         st.warning("Silakan pilih minimal satu saham.")
 
 with col1:
+    st.write(f"## Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
     # --- Horizontal Bar Chart Top 10 Saham ---
     top5_stocks = avg_prices.sort_values(ascending=False).head(10)
 
