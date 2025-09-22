@@ -233,26 +233,37 @@ with col2:
 
 with col1:
     with st.container(border=True):
-            st.write(f"## Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
-            # --- Horizontal Bar Chart Top 10 Saham ---
-            top5_stocks = avg_prices.sort_values(ascending=False).head(10)
+        st.write(f"## 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
-            fig_barh = go.Figure(go.Bar(
-                x=top5_stocks.values,      # sumbu X = nilai
-                y=top5_stocks.index,       # sumbu Y = nama saham
-                text=[f"{v:.2f}" for v in top5_stocks.values],
-                textposition='auto',
-                orientation='h',           # ini bikin horizontal
-                marker=dict(color='#c94d4d')
-            ))
+        # --- Ambil Top 10 ---
+        top10_stocks = avg_prices.sort_values(ascending=False).head(10)
 
-            fig_barh.update_layout(
-                xaxis_title=metric_choice,
-                yaxis_title="Saham",
-                template="plotly_dark",
-                yaxis=dict(
-                    categoryorder="total ascending"   # <<< bikin urut sesuai nilai
-                )
-            )
+        # --- Horizontal Bar Chart ---
+        fig_barh = go.Figure(go.Bar(
+            x=top10_stocks.values,
+            y=top10_stocks.index,
+            text=[f"{v:.2f}" for v in top10_stocks.values],
+            textposition='auto',
+            orientation='h',
+            marker=dict(color='#c94d4d')
+        ))
 
-            st.plotly_chart(fig_barh, use_container_width=True)
+        fig_barh.update_layout(
+            xaxis_title=metric_choice,
+            yaxis_title="Saham",
+            template="plotly_dark",
+            yaxis=dict(categoryorder="total ascending"),
+            height=500
+        )
+
+        st.plotly_chart(fig_barh, use_container_width=True)
+
+        # --- Tambah tabel data ---
+        st.dataframe(
+            top10_stocks.reset_index().rename(
+                columns={"index": "Saham", 0: f"Harga {metric_choice}"}
+            ),
+            use_container_width=True,
+            height=300
+        )
+
