@@ -309,7 +309,7 @@ with col1:
         df_bar.columns = ["Saham", f"Harga {metric_choice}"]
 
         # ---- buat ngurutin
-        y_order = df_bar.sort_values(f"Harga {metric_choice}", ascending=True)["Saham"].tolist()
+        y_order = df_bar.sort_values(f"Harga {metric_choice}", ascending=False)["Saham"].tolist()
 
         # --- Base Chart ---
         bar = (
