@@ -20,12 +20,27 @@ with col1:
         # --- Pilih ticker ---
         tickers_list = [
             "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-            "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK"
+            "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK",
+            "ICBP.JK", "INDF.JK", "SMGR.JK", "KLBF.JK", "BBNI.JK", "BRIS.JK",
+            "ADRO.JK", "ANTM.JK", "MEDC.JK", "PGAS.JK", "EXCL.JK", "JSMR.JK",
+            "TBIG.JK", "SIDO.JK", "WIKA.JK", "WSKT.JK", "MYOR.JK", "MNCN.JK",
+            "PWON.JK", "AKRA.JK", "UNTR.JK", "SMRA.JK", "TINS.JK", "BSDE.JK",
+            "CPIN.JK", "HMSP.JK", "MAPA.JK", "MAPI.JK", "INCO.JK", "ADHI.JK",
+            "INKP.JK", "TBLA.JK", "BUMI.JK", "ERAA.JK", "BTPS.JK", "BBTN.JK",
+            "BBKP.JK", "PNBN.JK", "BNGA.JK", "NISP.JK", "BMTR.JK", "SCMA.JK",
+            "TOTL.JK", "WTON.JK", "LPKR.JK", "LPCK.JK", "MLPL.JK", "IMAS.JK",
+            "GGRM.JK", "DVLA.JK", "CMPP.JK", "KAEF.JK", "KRAS.JK", "PANI.JK",
+            "TOWR.JK", "MTDL.JK", "ELSA.JK", "INDY.JK", "RAJA.JK", "SGRO.JK",
+            "AALI.JK", "LSIP.JK", "SSMS.JK", "BISI.JK", "BWPT.JK", "HRUM.JK",
+            "DOID.JK", "PTBA.JK", "ITMG.JK", "MBAP.JK", "GEMS.JK", "PSAB.JK",
+            "DKFT.JK", "CITA.JK", "MDKA.JK", "BRMS.JK", "ZINC.JK", "GGRP.JK",
+            "NCKL.JK", "FREN.JK", "ISAT.JK", "TPIA.JK", "INDY.JK", "ARTO.JK"
         ]
         tickers = st.multiselect(
             "Pilih saham:", 
             tickers_list, 
-            default=["AAPL", "MSFT"]
+            default=["BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK",
+            "ICBP.JK", "INDF.JK", "SMGR.JK", "KLBF.JK", "BBNI.JK", "BRIS.JK"]
         )
 
         # --- Pilih mode date ---
