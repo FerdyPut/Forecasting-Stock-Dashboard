@@ -217,6 +217,7 @@ with col2:
     else:
         st.warning("Silakan pilih minimal satu saham.")
 
+with col1:
     # --- Horizontal Bar Chart Top 5 Saham ---
     top5_stocks = avg_prices.sort_values(ascending=False).head(5)
 
