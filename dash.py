@@ -244,7 +244,8 @@ with col2:
                 with st.container(border=True):
                     st.metric(
                         label=f"Rata-rata Harga Saham ({metric_choice})",
-                        value=f"{avg_prices.mean():.2f}"
+                        value=f"{avg_prices.mean():.2f}",
+                        delta=f"Wow"
                     )
                     st.caption("Nilai dalam satuan Mata Uang terkait")
 
