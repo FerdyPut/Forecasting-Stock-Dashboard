@@ -217,6 +217,7 @@ with col2:
                 }}
                 .hover-box:hover {{
                     background-color: #5b4699;
+                    transform: scale(1.01);
                 }}
                 .download-btn {{
                     display: none;
@@ -233,10 +234,6 @@ with col2:
                     border-radius: 5px;
                     font-weight: bold;
                 }}
-            .custom-text:hover {{
-                color: #B0A5E6;
-                transform: scale(1.01);
-            }} 
                 </style>
 
                 <div class="hover-box">
