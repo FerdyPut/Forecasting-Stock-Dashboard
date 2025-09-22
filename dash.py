@@ -237,7 +237,7 @@ with col2:
 
 with col1:
     with st.container(border=True):
-        st.write(f"### Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
+        st.write(f"### 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
         # --- Ambil Top 10 ---
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
