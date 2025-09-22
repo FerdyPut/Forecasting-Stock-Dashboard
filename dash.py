@@ -233,6 +233,10 @@ with col2:
                     border-radius: 5px;
                     font-weight: bold;
                 }}
+            .custom-text:hover {{
+                color: #B0A5E6;
+                transform: scale(1.01);
+            }} 
                 </style>
 
                 <div class="hover-box">
