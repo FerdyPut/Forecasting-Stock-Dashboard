@@ -6,6 +6,7 @@ from datetime import date, timedelta
 import urllib.parse
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 
 # --- Page Config ---
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
@@ -238,10 +239,27 @@ with col1:
         # --- Ambil Top 10 ---
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
 
-        # --- Biar horizontal: transpose dataframe ---
-        df_bar = top10_stocks.to_frame(name=f"Harga {metric_choice}").T
+        df_bar = top10_stocks.reset_index()
+        df_bar.columns = ["Saham", f"Harga {metric_choice}"]
 
-        # --- Native Streamlit bar chart ---
-        st.bar_chart(df_bar, use_container_width=True)
+        # --- Horizontal Bar Chart pakai Plotly ---
+        fig = px.bar(
+            df_bar,
+            x=f"Harga {metric_choice}",
+            y="Saham",
+            orientation="h",
+            text=f"Harga {metric_choice}",
+            color_discrete_sequence=["#c94d4d"]  # warna sama semua
+        )
+
+        fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+        fig.update_layout(
+            template="plotly_dark",
+            height=500,
+            yaxis=dict(categoryorder="total ascending")  # urutin sesuai nilai
+        )
+
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": True})
+
 
 
