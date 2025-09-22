@@ -308,13 +308,16 @@ with col1:
         df_bar = top10_stocks.reset_index()
         df_bar.columns = ["Saham", f"Harga {metric_choice}"]
 
+        # ---- buat ngurutin
+        y_order = df_bar.sort_values(f"Harga {metric_choice}", ascending=True)["Saham"].tolist()
+
         # --- Base Chart ---
         bar = (
             alt.Chart(df_bar)
             .mark_bar(color="#cd4d4d")
             .encode(
                 x=alt.X(f"Harga {metric_choice}:Q", title=f"Harga {metric_choice}"),
-                y=alt.Y("Saham:N", sort="-x", title="Saham"),
+                y=alt.Y("Saham:N", sort=y_order, title="Saham"),
                 tooltip=["Saham", f"Harga {metric_choice}"]
             )
         )
