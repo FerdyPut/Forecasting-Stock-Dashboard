@@ -300,25 +300,32 @@ with col2:
 
 with col1:
     with st.container(border=True):
-        st.markdown(""" <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"> """, unsafe_allow_html=True)
+        st.markdown(
+            """<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">""",
+            unsafe_allow_html=True
+        )
         st.write(f"### 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
         # --- Ambil Top 10 ---
+        value_col = f"Harga {metric_choice}"
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
         df_bar = top10_stocks.reset_index()
-        df_bar.columns = ["Saham", f"Harga {metric_choice}"]
+        df_bar.columns = ["Saham", value_col]
 
-        # ---- buat ngurutin
-        y_order = df_bar.sort_values(f"Harga {metric_choice}", ascending=False)["Saham"].tolist()
+        # --- pastikan numeric
+        df_bar[value_col] = pd.to_numeric(df_bar[value_col], errors="coerce")
+
+        # --- urutin descending berdasarkan value
+        y_order = df_bar.sort_values(by=value_col, ascending=False)["Saham"].tolist()
 
         # --- Base Chart ---
         bar = (
             alt.Chart(df_bar)
             .mark_bar(color="#cd4d4d")
             .encode(
-                x=alt.X(f"Harga {metric_choice}:Q", title=f"Harga {metric_choice}"),
+                x=alt.X(f"{value_col}:Q", title=value_col),
                 y=alt.Y("Saham:N", sort=y_order, title="Saham"),
-                tooltip=["Saham", f"Harga {metric_choice}"]
+                tooltip=["Saham", alt.Tooltip(f"{value_col}:Q", format=",.2f")]
             )
         )
 
@@ -330,13 +337,13 @@ with col1:
                 baseline="middle",
                 dx=3,
                 color="white",
-                font="Poppins",     # <<< ganti font label
+                font="Poppins",
                 fontSize=12
             )
             .encode(
-                x=f"Harga {metric_choice}:Q",
-                y="Saham:N",
-                text=alt.Text(f"Harga {metric_choice}:Q", format=",.2f")
+                x=f"{value_col}:Q",
+                y=alt.Y("Saham:N", sort=y_order),
+                text=alt.Text(f"{value_col}:Q", format=",.2f")
             )
         )
 
@@ -360,6 +367,7 @@ with col1:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
 
 
 
