@@ -235,5 +235,16 @@ fig_barh.update_layout(
     template="plotly_dark"
 )
 
+fig_barh = go.Figure(go.Bar(
+    x=top5_stocks.values,
+    y=top5_stocks.index,
+    text=[f"{v:.2f}" for v in top5_stocks.values],
+    textposition='auto',
+    orientation='h',
+    marker=dict(
+        color='dodgerblue',
+        line=dict(color='black', width=0)  # outline bisa dimatikan
+    )
+))
 st.plotly_chart(fig_barh, use_container_width=True)
 
