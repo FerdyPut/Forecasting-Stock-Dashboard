@@ -189,6 +189,7 @@ with col2:
                     transition: 0.3s;
                     position: relative;
                     margin-top: 1px;
+                    font-size: 100 px;
                 }}
                 .hover-box:hover {{
                     background-color: #151f33;
@@ -211,7 +212,7 @@ with col2:
                 </style>
 
                 <div class="hover-box">
-                    <strong>Analytics</strong>
+                    <strong>Analytics (Based on Statistics)</strong>
                 </div>
                 <p></p>
                 """, unsafe_allow_html=True
