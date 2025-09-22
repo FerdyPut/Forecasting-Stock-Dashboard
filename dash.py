@@ -246,6 +246,7 @@ with col2:
                         label=f"Rata-rata Harga Saham ({metric_choice})",
                         value=f"{avg_prices.mean():.2f}"
                     )
+                    st.badge(f"Berdasarkan Harga {metric_choice}")
                     st.caption("Nilai dalam satuan Mata Uang terkait")
 
             with col2_s:
@@ -255,9 +256,7 @@ with col2:
                         value=f"{highest_stock} : {highest_avg_value:.2f}",
                         delta=f"{highest_pct:.2f}%"
                     )
-
-                    st.caption("Nilai dalam satuan Mata Uang terkait")
-
+                    st.badge(f"Berdasarkan Harga {metric_choice}")
 
             with col3_s:
                 with st.container(border=True):
