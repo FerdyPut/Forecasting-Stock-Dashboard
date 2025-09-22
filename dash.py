@@ -190,6 +190,7 @@ with col2:
                     position: relative;
                     margin-top: 1px;
                     font-size: 18px;
+                    font-family: 'Poppins', sans-serif;
                 }}
                 .hover-box:hover {{
                     background-color: #5b4699;
