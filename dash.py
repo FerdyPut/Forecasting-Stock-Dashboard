@@ -78,7 +78,7 @@ with col1:
             end_date = date.today()
             start_date = end_date - timedelta(days=days_back)
 
-            st.caption(f"📌 Dipilih: **{st.session_state.time_choice}**", color="blue")
+            st.badge(f"📌 Dipilih: **{st.session_state.time_choice}**", color="blue")
 
         else:  # Custom Date Range
             start_date = st.date_input("Start Date", date(2010,1,1))
