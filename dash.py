@@ -7,6 +7,7 @@ import urllib.parse
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+import altair as alt
 
 # --- Page Config ---
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
@@ -232,14 +233,32 @@ with col2:
     else:
         st.warning("Silakan pilih minimal satu saham.")
 
+
+
 with col1:
     with st.container(border=True):
         st.write(f"## 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
+        # --- Ambil Top 10 ---
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
-        df_bar = top10_stocks.to_frame(name=f"Harga {metric_choice}")
+        df_bar = top10_stocks.reset_index()
+        df_bar.columns = ["Saham", f"Harga {metric_choice}"]
 
-        # native streamlit bar chart (vertikal)
-        st.bar_chart(df_bar, use_container_width=True, horizontal=True)
+        # --- Altair Chart ---
+        chart = (
+            alt.Chart(df_bar)
+            .mark_bar(color="#c94d4d")  # 1 warna aja
+            .encode(
+                x=alt.X(f"Harga {metric_choice}:Q", title=f"Harga {metric_choice}"),
+                y=alt.Y("Saham:N", sort="-x", title="Saham"),  # sort biar dari terbesar ke kecil
+                tooltip=["Saham", f"Harga {metric_choice}"]
+            )
+            .properties(height=400)
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
+        # --- Tambah tabel data ---
+        st.dataframe(df_bar, use_container_width=True, height=300)
 
 
