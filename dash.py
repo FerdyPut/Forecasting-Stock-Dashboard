@@ -368,6 +368,93 @@ with col1:
 
         st.altair_chart(chart, use_container_width=True)
 
+with col2:
+    with st.container(border=True):
+        metric_choice = st.session_state.metric_choice
+
+        # --- Pilih data sesuai metric ---
+        if len(tickers) == 1:
+            data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+        else:
+            data_metric = data[metric_choice]
+
+        # --- Simpan data asli ---
+        data_nonnormal = data_metric.copy()
+
+        # --- Normalisasi (kecuali Volume) ---
+        if metric_choice != "Volume":
+            data_metric = data_metric / data_metric.iloc[0]
+
+        # --- Moving Average (20 & 50 hari) ---
+        ma20 = data_metric.rolling(window=20).mean()
+        ma50 = data_metric.rolling(window=50).mean()
+
+        # --- RSI (14 hari) ---
+        delta = data_metric.diff()
+        gain = delta.clip(lower=0)
+        loss = -delta.clip(upper=0)
+        avg_gain = gain.rolling(window=14).mean()
+        avg_loss = loss.rolling(window=14).mean()
+        rs = avg_gain / avg_loss
+        rsi = 100 - (100 / (1 + rs))
+
+        # --- Reshape ke long format untuk Altair ---
+        df_long = data_metric.reset_index().melt(
+            id_vars="Date", var_name="Saham", value_name="Value"
+        )
+        df_ma20 = ma20.reset_index().melt(id_vars="Date", var_name="Saham", value_name="MA20")
+        df_ma50 = ma50.reset_index().melt(id_vars="Date", var_name="Saham", value_name="MA50")
+        df_rsi = rsi.reset_index().melt(id_vars="Date", var_name="Saham", value_name="RSI")
+
+        # --- Gabung MA ke chart utama ---
+        base = alt.Chart(df_long).mark_line().encode(
+            x="Date:T",
+            y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
+            color="Saham:N",
+            tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
+        )
+
+        line_ma20 = alt.Chart(df_ma20).mark_line(strokeDash=[5,5], color="orange").encode(
+            x="Date:T", y="MA20:Q", tooltip=["Saham", "Date:T", alt.Tooltip("MA20:Q", format=",.2f")]
+        )
+
+        line_ma50 = alt.Chart(df_ma50).mark_line(strokeDash=[2,2], color="blue").encode(
+            x="Date:T", y="MA50:Q", tooltip=["Saham", "Date:T", alt.Tooltip("MA50:Q", format=",.2f")]
+        )
+
+        chart_price = (base + line_ma20 + line_ma50).properties(
+            title=f"📊 Harga {metric_choice} + Moving Averages",
+            height=400
+        )
+
+        # --- RSI Chart ---
+        chart_rsi = alt.Chart(df_rsi).mark_line(color="purple").encode(
+            x="Date:T",
+            y=alt.Y("RSI:Q", scale=alt.Scale(domain=[0,100]), title="RSI (14)"),
+            color="Saham:N",
+            tooltip=["Saham", "Date:T", alt.Tooltip("RSI:Q", format=",.2f")]
+        ).properties(
+            title="📉 Relative Strength Index (RSI)",
+            height=150
+        )
+
+        # --- Tambah garis level RSI (30 & 70) ---
+        rsi_thresholds = alt.Chart(pd.DataFrame({
+            "y": [30,70]
+        })).mark_rule(strokeDash=[4,4], color="red").encode(y="y:Q")
+
+        chart_rsi = chart_rsi + rsi_thresholds
+
+        # --- Gabung chart ---
+        final_chart = alt.vconcat(chart_price, chart_rsi).configure_axis(
+            labelFont="Poppins", titleFont="Poppins"
+        ).configure_title(
+            font="Poppins", fontSize=16
+        ).configure_legend(
+            labelFont="Poppins", titleFont="Poppins"
+        )
+
+        st.altair_chart(final_chart, use_container_width=True)
 
 
 
