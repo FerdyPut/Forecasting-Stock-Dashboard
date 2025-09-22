@@ -248,7 +248,7 @@ with col2:
                         delta="\u200B IDR, USD, etc.",
                         delta_color = "off"
                     )
-                    st.caption("Nilai dalam satuan Mata Uang terkait")
+                    st.bade("Nilai dalam satuan Mata Uang terkait", color="#cd4d4d")
 
             with col2_s:
                 with st.container(border=True):
