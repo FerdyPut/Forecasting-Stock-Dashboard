@@ -239,6 +239,7 @@ with col2:
 
 with col1:
     with st.container(border=True):
+        st.markdown(""" <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"> """, unsafe_allow_html=True)
         st.write(f"### 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
         # --- Ambil Top 10 ---
