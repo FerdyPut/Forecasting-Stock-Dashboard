@@ -248,7 +248,7 @@ with col2:
                         delta="\u200B IDR, USD, etc.",
                         delta_color = "off"
                     )
-                    st.badge(f"Nilai dalam satuan Mata Uang terkait", color= "Crimson Red")
+                    st.badge(f"Nilai dalam satuan Mata Uang terkait", color= "red")
 
             with col2_s:
                 with st.container(border=True):
