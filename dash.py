@@ -111,6 +111,7 @@ with col1:
                 tertinggi, terendah, penutupan, maupun volume. Dengan memilih metrik yang sesuai, 
                 dinamika pasar dapat dipahami secara lebih jelas.
             </div>
+            <p></p>
             """,
             unsafe_allow_html=True
         )
