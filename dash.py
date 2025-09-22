@@ -236,30 +236,10 @@ with col1:
     with st.container(border=True):
         st.write(f"## 🔝 Top 10 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
 
-        # --- Ambil Top 10 ---
         top10_stocks = avg_prices.sort_values(ascending=False).head(10)
+        df_bar = top10_stocks.to_frame(name=f"Harga {metric_choice}")
 
-        df_bar = top10_stocks.reset_index()
-        df_bar.columns = ["Saham", f"Harga {metric_choice}"]
-
-        # --- Horizontal Bar Chart pakai Plotly ---
-        fig = px.bar(
-            df_bar,
-            x=f"Harga {metric_choice}",
-            y="Saham",
-            orientation="h",
-            text=f"Harga {metric_choice}",
-            color_discrete_sequence=["#c94d4d"]  # warna sama semua
-        )
-
-        fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-        fig.update_layout(
-            template="plotly_dark",
-            height=500,
-            yaxis=dict(categoryorder="total ascending")  # urutin sesuai nilai
-        )
-
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": True})
-
+        # native streamlit bar chart (vertikal)
+        st.bar_chart(df_bar, use_container_width=True)
 
 
