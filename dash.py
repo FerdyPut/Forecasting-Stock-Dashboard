@@ -129,18 +129,33 @@ with col2:
                     id_vars="Date", var_name="Saham", value_name="Value"
                 )
 
+                # --- Hitung quantile untuk default scale ---
+                q_low, q_high = df_long["Value"].quantile([0.05, 0.95])
+
+                # --- Slider manual untuk atur range Y ---
+                ymin, ymax = st.slider(
+                    "Atur Range Y-axis",
+                    float(df_long["Value"].min()),
+                    float(df_long["Value"].max()),
+                    (float(q_low), float(q_high))
+                )
+
                 # --- Line chart Altair ---
                 chart = (
                     alt.Chart(df_long)
                     .mark_line()
                     .encode(
                         x=alt.X("Date:T", title="Date"),
-                        y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
+                        y=alt.Y(
+                            "Value:Q",
+                            title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
+                            scale=alt.Scale(domain=[ymin, ymax])
+                        ),
                         color=alt.Color("Saham:N", title="Saham"),
                         tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
                     )
                     .properties(
-                        title=f"### 📊 Perbandingan Harga {metric_choice} Saham",
+                        title=f"📊 Perbandingan Harga {metric_choice} Saham",
                         height=480
                     )
                     .configure_axis(
@@ -158,6 +173,7 @@ with col2:
                 )
 
                 st.altair_chart(chart, use_container_width=True)
+
 
             # --- Download CSV dengan Hover Box ---
             csv_string = data.to_csv(index=True)
