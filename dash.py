@@ -255,6 +255,7 @@ with col2:
                         value=f"{highest_stock} : {highest_avg_value:.2f}",
                         delta=f"{highest_pct:.2f}%"
                     )
+                    st.badge(f"Berdasarkan Harga {metric_choice}")
 
             with col3_s:
                 with st.container(border=True):
@@ -263,6 +264,7 @@ with col2:
                         value=f"{lowest_stock} : {lowest_avg_value:.2f}",
                         delta=f"{lowest_pct:.2f}%"
                     )
+                    st.badge(f"Berdasarkan Harga {metric_choice}")
 
     else:
         st.warning("Silakan pilih minimal satu saham.")
