@@ -82,6 +82,7 @@ with col1:
 
         st.caption(f"📌 Metrik aktif: **{st.session_state.metric_choice}**")
     st.write(f"## Top 5 Saham dengan Harga {st.session_state.metric_choice} Tertinggi")
+
 # --- Kanan: Grafik & Data ---
 with col2:
     if tickers:
@@ -216,8 +217,6 @@ with col2:
     else:
         st.warning("Silakan pilih minimal satu saham.")
 
-col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
-with col1:
     # --- Horizontal Bar Chart Top 5 Saham ---
     top5_stocks = avg_prices.sort_values(ascending=False).head(5)
 
@@ -238,4 +237,3 @@ with col1:
 
 
     st.plotly_chart(fig_barh, use_container_width=True)
-
