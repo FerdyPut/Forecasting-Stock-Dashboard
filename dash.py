@@ -417,13 +417,8 @@ with col2:
 
     with st.container(border=True):     
 
-        # Warna untuk indikator
-        indicator_colors = {
-            "SMA": "orange"
-        }
-
         # Fungsi untuk membuat chart
-        def create_chart(df, close_line=False, include_vol=False):
+        def create_chart(df, close_line=True, include_vol=True):
             source = ColumnDataSource(df)
 
             candle = figure(x_axis_type="datetime", height=500, 
@@ -457,4 +452,4 @@ with col2:
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
         # Menampilkan chart
-        st.bokeh_chart(create_chart(data_metric,indicators=indicators), use_container_width=True)
+        st.bokeh_chart(create_chart(data_metric, indicators), use_container_width=True)
