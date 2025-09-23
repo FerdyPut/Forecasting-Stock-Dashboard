@@ -412,13 +412,21 @@ with col2:
         <p></p>
         """, unsafe_allow_html=True
     )
+
+    # --- Container ---
     with st.container(border=True):
         metric_choice = st.session_state.metric_choice
+
+        # --- Pilih tipe chart ---
+        chart_type = st.selectbox("Pilih Tipe Chart", ["Line", "Candlestick"])
 
         # --- Input pilih periode MA ---
         ma_options = [10, 20, 50, 100, 200]
         ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
         ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
+
+        # --- Pilih metode MA ---
+        ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
 
         # --- Pilih data sesuai metric ---
         if len(tickers) == 1:
@@ -433,59 +441,70 @@ with col2:
         if metric_choice != "Volume":
             data_metric = data_metric / data_metric.iloc[0]
 
-        # --- Moving Average sesuai pilihan ---
-        ma1 = data_metric.rolling(window=ma_period1).mean()
-        ma2 = data_metric.rolling(window=ma_period2).mean()
+        # --- Hitung MA ---
+        if ma_method == "Simple":
+            ma1 = data_metric.rolling(window=ma_period1).mean()
+            ma2 = data_metric.rolling(window=ma_period2).mean()
+        else:  # Exponential
+            ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
+            ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
 
-        # --- Reshape data ---
-        df_long = data_metric.reset_index().melt(
-            id_vars="Date", var_name="Saham", value_name="Value"
-        )
-        df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
-        df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
+        # --- Plot sesuai tipe chart ---
+        if chart_type == "Line":
+            df_long = data_metric.reset_index().melt(
+                id_vars="Date", var_name="Saham", value_name="Value"
+            )
+            df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
+            df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
 
-        # --- Base Chart (Harga) ---
-        base = alt.Chart(df_long).mark_line().encode(
-            x="Date:T",
-            y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
-            color="Saham:N",
-            tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
-        )
+            base = alt.Chart(df_long).mark_line().encode(
+                x="Date:T",
+                y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
+                color="Saham:N",
+                tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
+            )
 
-        # --- Garis MA1 ---
-        line_ma1 = alt.Chart(df_ma1).mark_line(
-            strokeDash=[5, 5], color="orange"
-        ).encode(
-            x="Date:T",
-            y=f"MA{ma_period1}:Q",
-            tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
-        )
+            line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="orange").encode(
+                x="Date:T",
+                y=f"MA{ma_period1}:Q",
+                tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
+            )
 
-        # --- Garis MA2 ---
-        line_ma2 = alt.Chart(df_ma2).mark_line(
-            strokeDash=[2, 2], color="blue"
-        ).encode(
-            x="Date:T",
-            y=f"MA{ma_period2}:Q",
-            tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
-        )
+            line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="blue").encode(
+                x="Date:T",
+                y=f"MA{ma_period2}:Q",
+                tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
+            )
 
-        # --- Combine ---
-        final_chart = (base + line_ma1 + line_ma2).properties(
-            title=f"📊 Harga {metric_choice} + MA ({ma_period1} & {ma_period2} Hari)",
-            height=400
-        ).configure_axis(
-            labelFont="Poppins",
-            titleFont="Poppins"
-        ).configure_title(
-            font="Poppins",
-            fontSize=16
-        ).configure_legend(
-            labelFont="Poppins",
-            titleFont="Poppins"
-        )
+            final_chart = (base + line_ma1 + line_ma2).properties(
+                title=f"📊 Harga {metric_choice} + MA ({ma_period1} & {ma_period2} Hari)",
+                height=400
+            ).configure_axis(labelFont="Poppins", titleFont="Poppins"
+            ).configure_title(font="Poppins", fontSize=16
+            ).configure_legend(labelFont="Poppins", titleFont="Poppins")
 
-        st.altair_chart(final_chart, use_container_width=True)
+            st.altair_chart(final_chart, use_container_width=True)
+
+        else:  # Candlestick dengan Plotly
+            fig = go.Figure(data=[go.Candlestick(
+                x=data.index,
+                open=data['Open'],
+                high=data['High'],
+                low=data['Low'],
+                close=data['Close'],
+                name="Candlestick"
+            )])
+
+            fig.add_trace(go.Scatter(
+                x=data.index, y=ma1[tickers[0]], line=dict(color='orange', dash='dash'), name=f"MA{ma_period1}"
+            ))
+            fig.add_trace(go.Scatter(
+                x=data.index, y=ma2[tickers[0]], line=dict(color='blue', dash='dot'), name=f"MA{ma_period2}"
+            ))
+
+            fig.update_layout(title=f"📊 Candlestick + MA ({ma_period1} & {ma_period2} Hari)",
+                            xaxis_title="Date", yaxis_title=metric_choice)
+            st.plotly_chart(fig, use_container_width=True)
 
 
 
