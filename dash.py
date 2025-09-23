@@ -135,29 +135,7 @@ with col2:
         else:
             with st.container(border=True):
                 metric_choice = st.session_state.metric_choice
-
-                # --- Cek kolom yang ada di 'data' ---
-                st.write("Data columns:", data.columns)  # Menampilkan kolom yang ada
-
-                # --- Pastikan kolom metric_choice ada di data ---
-                if isinstance(data.columns, pd.MultiIndex):
-                    # Jika data punya MultiIndex (misalnya untuk banyak ticker)
-                    if metric_choice in data.columns.get_level_values(0):  # Cek apakah metric_choice ada di level pertama
-                        if len(tickers) == 1:
-                            # Jika hanya satu ticker, kita ambil dengan xs() untuk mengambil kolom yang benar
-                            data_metric = data[metric_choice]
-                        else:
-                            # Jika lebih dari satu ticker, kita ambil metric_choice
-                            data_metric = data[metric_choice]
-                    else:
-                        st.error(f"⚠️ Metric '{metric_choice}' tidak ditemukan di level pertama MultiIndex.")
-                        st.stop()
-                else:
-                    # Kalau data tidak punya MultiIndex (misalnya hanya satu ticker)
-                    if len(tickers) == 1:
-                        data_metric = data[metric_choice]
-                    else:
-                        data_metric = data[metric_choice]
+                data_metric = data[metric_choice]
 
                 # --- Simpan data asli (untuk tabel/opsi lain) ---
                 data_nonnormal = data_metric.copy()
