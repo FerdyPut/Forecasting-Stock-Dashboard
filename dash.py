@@ -490,7 +490,7 @@ with col2:
 
                 # --- Slider Y-axis ---
                 q_low, q_high = df_long["Value"].quantile([0.05, 0.95])
-                ymin, ymax = st.slider("Atur Range Y-axis", float(df_long["Value"].min()), float(df_long["Value"].max()), (float(q_low), float(q_high)))
+                ymin, ymax = st.slider("Atur Range Y-axis", float(df_long["Value"].min()), float(df_long["Value"].max()), (float(q_low), float(q_high)), key="slider2")
 
                 # --- Altair chart ---
                 base = alt.Chart(df_long).mark_line().encode(
