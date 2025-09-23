@@ -4,6 +4,6 @@ prophet
 plotly
 pandas
 seaborn
-bokeh
+streamlit_bokeh
 numpy
 ta-lib
