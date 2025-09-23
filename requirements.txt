@@ -4,5 +4,5 @@ prophet
 plotly
 pandas
 seaborn
-scipy
+scipy>=1.10.0
 numpy
