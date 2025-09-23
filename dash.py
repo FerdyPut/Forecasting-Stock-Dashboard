@@ -19,8 +19,6 @@ import numpy as np
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("📈 Dynamic Stock Dashboard")
 
-
-#--------------- Moving Average
 # Warna untuk indikator
 indicator_colors = {
     "SMA": "orange", "EMA": "violet", "WMA": "blue", "RSI": "yellow", "MOM": "black", 
@@ -46,7 +44,7 @@ def get_stock_data(tickers, metric, start_date, end_date):
 # Fungsi untuk membuat chart
 def create_chart(df, close_line=False, include_vol=False, indicators=[]):
     ## Candlestick Pattern Logic
-    candle = figure(x_axis_type="datetime", plot_height=500, x_range=(df.Date.values[0], df.Date.values[-1]),
+    candle = figure(x_axis_type="datetime", height=500, x_range=(df.Date.values[0], df.Date.values[-1]),
                     tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
                               ("Low", "@Low"), ("Close", "@Close")])
 
@@ -87,7 +85,7 @@ def create_chart(df, close_line=False, include_vol=False, indicators=[]):
     ## Volume Bars Logic
     volume = None
     if include_vol:
-        volume = figure(x_axis_type="datetime", plot_height=150, x_range=(df.Date.values[0], df.Date.values[-1]))
+        volume = figure(x_axis_type="datetime", height=150, x_range=(df.Date.values[0], df.Date.values[-1]))
         volume.segment("Date", 0, "Date", "Volume", line_width=2 if len(df) > 100 else 6, line_color="BarColor", alpha=0.8, source=df)
         volume.yaxis.axis_label = "Volume"
 
