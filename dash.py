@@ -11,6 +11,8 @@ import altair as alt
 from bokeh.plotting import figure, column
 import talib
 import numpy as np
+from bokeh.models import ColumnDataSource, DataRange1d
+from bokeh.layouts import column
 from streamlit_bokeh import streamlit_bokeh
 
 # --- Page Config ---
