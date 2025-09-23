@@ -10,6 +10,7 @@ import plotly.express as px
 import altair as alt
 import plotly.graph_objects as go
 
+
 # --- Page Config ---
 
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
@@ -413,7 +414,6 @@ with col2:
         <p></p>
         """, unsafe_allow_html=True
     )
-
     with st.container(border=True):
         ma_options = [10, 20, 50, 100, 200]
         method_options = ["SMA", "EMA", "WMA", "Median"]
@@ -422,7 +422,6 @@ with col2:
         ma_period1 = st.selectbox("Pilih Periode 1", ma_options, index=1)
         ma_period2 = st.selectbox("Pilih Periode 2", ma_options, index=2)
 
-        # --- Ambil data multi-saham ---
         data_dict = {}
         for ticker in tickers:
             df = yf.download(ticker, start=start_date, end=end_date)
@@ -431,7 +430,6 @@ with col2:
             else:
                 data_dict[ticker] = df
 
-        # --- Fungsi smoothing ---
         def apply_smoothing(series, period, method):
             if method == "SMA":
                 return series.rolling(period).mean()
@@ -445,45 +443,39 @@ with col2:
             else:
                 return series
 
-        # --- Buat Plotly Figure ---
         fig = go.Figure()
         colors = ["orange", "blue", "purple", "cyan", "magenta", "yellow"]
 
         for i, ticker in enumerate(tickers):
             df = data_dict[ticker]
             
-            # Candlestick
-            fig.add_trace(go.Candlestick(
-                x=df.index,
-                open=df['Open'],
-                high=df['High'],
-                low=df['Low'],
-                close=df['Close'],
-                name=f"{ticker} Harga",
-                increasing_line_color='green',
-                decreasing_line_color='red'
+            # Line chart untuk harga Close
+            fig.add_trace(go.Scatter(
+                x=df.index, y=df['Close'],
+                mode='lines',
+                line=dict(color='green', width=2),
+                name=f"{ticker} Close",
+                hovertemplate=f"{ticker}<br>Date: %{{x|%Y-%m-%d}}<br>Close: %{{y:.2f}}<extra></extra>"
             ))
             
-            # Overlay garis smoothing (Close)
+            # Overlay MA/EMA/WMA/Median
             ma1 = apply_smoothing(df['Close'], ma_period1, method_choice)
             ma2 = apply_smoothing(df['Close'], ma_period2, method_choice)
             
             fig.add_trace(go.Scatter(
-                x=df.index, y=ma1, line=dict(color=colors[i%len(colors)], width=2, dash='dash'),
+                x=df.index, y=ma1, line=dict(color=colors[i % len(colors)], width=2, dash='dash'),
                 name=f"{ticker} {method_choice}{ma_period1}"
             ))
-            
             fig.add_trace(go.Scatter(
-                x=df.index, y=ma2, line=dict(color=colors[i%len(colors)], width=2, dash='dot'),
+                x=df.index, y=ma2, line=dict(color=colors[i % len(colors)], width=2, dash='dot'),
                 name=f"{ticker} {method_choice}{ma_period2}"
             ))
 
-        # --- Layout ---
         fig.update_layout(
-            title=f"📊 Multi-Saham Candlestick + {method_choice} ({ma_period1}, {ma_period2})",
+            title=f"📊 Multi-Saham Line Chart + {method_choice} ({ma_period1}, {ma_period2})",
             xaxis_title="Date",
             yaxis_title="Price",
-            xaxis_rangeslider_visible=False,
+            xaxis_rangeslider_visible=True,  # slider tanggal
             template="plotly_dark",
             height=600
         )
