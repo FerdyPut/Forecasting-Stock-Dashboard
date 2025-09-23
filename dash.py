@@ -421,7 +421,7 @@ with col2:
         def create_chart(df, close_line=True, include_vol=True):
             source = ColumnDataSource(df)
 
-            candle = figure(x_axis_type="datetime", height=500, 
+            candle = figure(x_axis_type="Date", height=500, 
                             tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
                                     ("Low", "@Low"), ("Close", "@Close")])
 
