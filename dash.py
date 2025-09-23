@@ -420,22 +420,6 @@ with col2:
             "DEMA": "red", "MA": "tomato", "TEMA": "dodgerblue"
         }
 
-        # Mendapatkan data saham berdasarkan tickers, metrics dan time horizon
-        def get_stock_data(tickers, metric, start_date, end_date):
-            # Mendapatkan data untuk semua tickers
-            data = yf.download(tickers, start=start_date, end=end_date)
-            
-            # Mengambil hanya metric yang dipilih
-            if metric not in data.columns:
-                raise ValueError(f"Metric {metric} tidak ada dalam data.")
-            
-            # Ambil hanya harga penutupan jika metric 'Close' dipilih
-            stock_data = data[[metric]]
-            stock_data['Date'] = stock_data.index
-            stock_data['Date_str'] = stock_data['Date'].dt.strftime('%Y-%m-%d')
-            
-            return stock_data
-
         # Fungsi untuk membuat chart
         def create_chart(df, close_line=False, include_vol=False, indicators=[]):
             ## Candlestick Pattern Logic
@@ -491,7 +475,7 @@ with col2:
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
         # Ambil data saham berdasarkan pilihan
-        df = get_stock_data(tickers, metric_choice, start_date, end_date)
+        df = data_metric
 
         # Menampilkan chart
-        st.bokeh_chart(create_chart(df, close_line=True, include_vol=True, indicators=indicators), use_container_width=True)
+        st.bokeh_chart(create_chart(df, indicators=indicators), use_container_width=True)
