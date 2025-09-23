@@ -12,6 +12,7 @@ from bokeh.plotting import figure, show
 from bokeh.io import output_notebook
 from bokeh.layouts import column
 import talib
+import numpy as np
 
 # --- Page Config ---
 
