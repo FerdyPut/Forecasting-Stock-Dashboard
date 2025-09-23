@@ -418,7 +418,7 @@ with col2:
     with st.container(border=True):     
 
         # Fungsi untuk membuat chart
-        def create_chart(df, close_line=True, include_vol=True):
+        def create_chart(df, indicators):
             source = ColumnDataSource(df)
 
             candle = figure(x_axis_type="Date", height=500, 
@@ -430,23 +430,10 @@ with col2:
             candle.vbar("Date", top="Open", bottom="Close", width=0.5, color="green", source=source, legend_label="Up")
             candle.vbar("Date", top="Close", bottom="Open", width=0.5, color="red", source=source, legend_label="Down")
 
-            # Close Price Line
-            if close_line:
-                candle.line("Date", "Close", color="black", source=source)
-
             # SMA (Simple Moving Average)
-            sma = talib.SMA(df["Close"].values, timeperiod=14)
+            sma = talib.SMA(df[indicators].values, timeperiod=14)
             candle.line(df["Date"], sma, color="orange", line_width=2, source=source, legend_label="SMA")
 
-            # Volume Bars Logic
-            if include_vol:
-                volume = figure(x_axis_type="datetime", height=150, 
-                                x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()))
-                volume.vbar(x="Date", top="Volume", width=0.5, color="blue", source=source)
-                volume.yaxis.axis_label = "Volume"
-                return column(children=[candle, volume], sizing_mode="scale_width")
-            
-            return candle
         
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
