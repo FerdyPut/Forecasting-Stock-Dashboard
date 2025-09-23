@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
-from bokeh.plotting import figure, column
+from bokeh.plotting import figure, show
+from bokeh.io import output_notebook
+from bokeh.layouts import column
 import talib
 
 # --- Page Config ---
@@ -411,6 +413,43 @@ with col2:
         """, unsafe_allow_html=True
     )
 
+    with st.container(border=True):
+        # Pilih metode Moving Average
+        ma_methods = ["SMA", "EMA", "WMA", "DEMA", "TEMA"]
+        ma_choice = st.selectbox("Pilih Metode Moving Average:", ma_methods)
+
+        # Mendapatkan data saham
+        selected_tickers = tickers
+        data = yf.download(selected_tickers, start=start_date, end=end_date)
+
+        # Menghitung Moving Average berdasarkan pilihan
+        metric = st.session_state.metric_choice
+        sma_period = 14  # Periode SMA
+        if ma_choice == "SMA":
+            ma = talib.SMA(data[metric], timeperiod=sma_period)
+        elif ma_choice == "EMA":
+            ma = talib.EMA(data[metric], timeperiod=sma_period)
+        elif ma_choice == "WMA":
+            ma = talib.WMA(data[metric], timeperiod=sma_period)
+        elif ma_choice == "DEMA":
+            ma = talib.DEMA(data[metric], timeperiod=sma_period)
+        elif ma_choice == "TEMA":
+            ma = talib.TEMA(data[metric], timeperiod=sma_period)
+
+        # Visualisasi dengan Bokeh
+        output_notebook()
+
+        p = figure(title=f"Stock Prices and {ma_choice} Moving Average", x_axis_label='Date', y_axis_label='Price', x_axis_type='datetime', plot_height=400, plot_width=800)
+
+        # Plot harga saham
+        p.line(data.index, data[metric], legend_label="Price", line_width=2, color="blue")
+
+        # Plot Moving Average
+        p.line(data.index[sma_period-1:], ma[sma_period-1:], legend_label=f"{ma_choice} ({sma_period} days)", line_width=2, color="red")
+
+        # Tampilkan plot
+        show(p)
+        
  
 
 
