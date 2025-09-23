@@ -415,27 +415,25 @@ with col2:
 
     # --- Container ---
     with st.container(border=True):
-        metric_choice = st.session_state.metric_choice
+        # Pilih metric
+        metric_choice = st.selectbox("Pilih Metric", ["Close", "Volume"], index=0)
 
-        # --- Pilih tipe chart ---
+        # Pilih chart type
         chart_type = st.selectbox("Pilih Tipe Chart", ["Line", "Candlestick"])
 
-        # --- Input pilih periode MA ---
+        # Pilih periode MA
         ma_options = [10, 20, 50, 100, 200]
         ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
         ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
 
-        # --- Pilih metode MA ---
+        # Pilih metode MA
         ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
 
-        # --- Pilih data sesuai metric ---
+        # --- Pilih data metric ---
         if len(tickers) == 1:
             data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
         else:
             data_metric = data[metric_choice]
-
-        # --- Simpan data asli ---
-        data_nonnormal = data_metric.copy()
 
         # --- Normalisasi (kecuali Volume) ---
         if metric_choice != "Volume":
@@ -443,13 +441,13 @@ with col2:
 
         # --- Hitung MA ---
         if ma_method == "Simple":
-            ma1 = data_metric.rolling(window=ma_period1).mean()
-            ma2 = data_metric.rolling(window=ma_period2).mean()
-        else:  # Exponential
+            ma1 = data_metric.rolling(ma_period1).mean()
+            ma2 = data_metric.rolling(ma_period2).mean()
+        else:
             ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
             ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
 
-        # --- Plot sesuai tipe chart ---
+        # --- Plot Line Chart ---
         if chart_type == "Line":
             df_long = data_metric.reset_index().melt(
                 id_vars="Date", var_name="Saham", value_name="Value"
@@ -477,7 +475,7 @@ with col2:
             )
 
             final_chart = (base + line_ma1 + line_ma2).properties(
-                title=f"📊 Harga {metric_choice} + MA ({ma_period1} & {ma_period2} Hari)",
+                title=f"📊 {metric_choice} + MA ({ma_period1} & {ma_period2})",
                 height=400
             ).configure_axis(labelFont="Poppins", titleFont="Poppins"
             ).configure_title(font="Poppins", fontSize=16
@@ -485,26 +483,35 @@ with col2:
 
             st.altair_chart(final_chart, use_container_width=True)
 
-        else:  # Candlestick dengan Plotly
-            fig = go.Figure(data=[go.Candlestick(
-                x=data.index,
-                open=data['Open'],
-                high=data['High'],
-                low=data['Low'],
-                close=data['Close'],
-                name="Candlestick"
-            )])
-
-            fig.add_trace(go.Scatter(
-                x=data.index, y=ma1[tickers[0]], line=dict(color='orange', dash='dash'), name=f"MA{ma_period1}"
-            ))
-            fig.add_trace(go.Scatter(
-                x=data.index, y=ma2[tickers[0]], line=dict(color='blue', dash='dot'), name=f"MA{ma_period2}"
-            ))
-
-            fig.update_layout(title=f"📊 Candlestick + MA ({ma_period1} & {ma_period2} Hari)",
-                            xaxis_title="Date", yaxis_title=metric_choice)
-            st.plotly_chart(fig, use_container_width=True)
+        # --- Plot Candlestick ---
+        else:
+            if len(tickers) > 1:
+                st.warning("Candlestick hanya bisa untuk 1 saham.")
+            else:
+                fig = go.Figure(data=[go.Candlestick(
+                    x=data.index,
+                    open=data['Open'],
+                    high=data['High'],
+                    low=data['Low'],
+                    close=data['Close'],
+                    name="Candlestick"
+                )])
+                fig.add_trace(go.Scatter(
+                    x=data.index, y=ma1[tickers[0]],
+                    line=dict(color='orange', dash='dash'),
+                    name=f"MA{ma_period1}"
+                ))
+                fig.add_trace(go.Scatter(
+                    x=data.index, y=ma2[tickers[0]],
+                    line=dict(color='blue', dash='dot'),
+                    name=f"MA{ma_period2}"
+                ))
+                fig.update_layout(
+                    title=f"📊 Candlestick + MA ({ma_period1} & {ma_period2})",
+                    xaxis_title="Date", yaxis_title=metric_choice,
+                    height=400
+                )
+                st.plotly_chart(fig, use_container_width=True)
 
 
 
