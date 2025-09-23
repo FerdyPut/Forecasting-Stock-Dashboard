@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
+from bokeh.plotting import figure, column
+import talib
 
 # --- Page Config ---
 
@@ -415,12 +417,29 @@ with col2:
 
     # --- Container ---
     with st.container(border=True):
-        metric_choice = st.session_state.metric_choice
+
+
+        # --- Candlestick helper ---
+        def create_candle_chart(df, indicators=[]):
+            df["BarColor"] = df.apply(lambda row: "green" if row["Close"]>=row["Open"] else "red", axis=1)
+            df["Date_str"] = df["Date"].astype(str)
+            
+            candle = figure(
+                x_axis_type="datetime", plot_height=500,
+                x_range=(df.Date.values[0], df.Date.values[-1]),
+                tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), ("Low", "@Low"), ("Close", "@Close")]
+            )
+            candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=df)
+            candle.segment("Date", "Open", "Date", "Close", line_color="BarColor",
+                        line_width=2 if len(df)>100 else 6, source=df)
+    
+        # --- Pilihan metric dari session ---
+        metric_choice = st.session_state.get("metric_choice", "Close")
 
         # --- Pilih tipe chart ---
         chart_type = st.selectbox("Pilih Tipe Chart", ["Line", "Candlestick"])
 
-        # --- Input pilih periode MA ---
+        # --- Input periode MA ---
         ma_options = [10, 20, 50, 100, 200]
         ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
         ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
@@ -428,83 +447,84 @@ with col2:
         # --- Pilih metode MA ---
         ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
 
-        # --- Pilih data sesuai metric ---
-        if len(tickers) == 1:
-            data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+        if not tickers or data.empty:
+            st.error("⚠️ Data tidak tersedia.")
         else:
-            data_metric = data[metric_choice]
+            if chart_type == "Line":
+                # --- Persiapkan data metric ---
+                if len(tickers) == 1:
+                    data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+                    single_saham = True
+                else:
+                    data_metric = data[metric_choice]
+                    single_saham = False
 
-        # --- Simpan data asli ---
-        data_nonnormal = data_metric.copy()
+                if isinstance(data_metric, pd.Series):
+                    data_metric = data_metric.to_frame(name=tickers[0])
+                
+                # --- Normalisasi (kecuali Volume) ---
+                if metric_choice != "Volume":
+                    data_metric = data_metric / data_metric.iloc[0]
 
-        # --- Normalisasi (kecuali Volume) ---
-        if metric_choice != "Volume":
-            data_metric = data_metric / data_metric.iloc[0]
+                # --- Hitung MA ---
+                if ma_method == "Simple":
+                    ma1 = data_metric.rolling(ma_period1).mean()
+                    ma2 = data_metric.rolling(ma_period2).mean()
+                else:
+                    ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
+                    ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
 
-        # --- Hitung MA ---
-        if ma_method == "Simple":
-            ma1 = data_metric.rolling(window=ma_period1).mean()
-            ma2 = data_metric.rolling(window=ma_period2).mean()
-        else:  # Exponential
-            ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
-            ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
+                # --- Long format untuk Altair ---
+                if single_saham:
+                    df_long = pd.DataFrame({
+                        "Date": data_metric.index,
+                        "Saham": tickers[0],
+                        "Value": data_metric.iloc[:,0].values
+                    })
+                    df_ma1 = pd.DataFrame({"Date": ma1.index, "Saham": tickers[0], f"MA{ma_period1}": ma1.iloc[:,0].values})
+                    df_ma2 = pd.DataFrame({"Date": ma2.index, "Saham": tickers[0], f"MA{ma_period2}": ma2.iloc[:,0].values})
+                else:
+                    df_long = data_metric.reset_index().melt(id_vars="Date", var_name="Saham", value_name="Value")
+                    df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
+                    df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
 
-        # --- Plot sesuai tipe chart ---
-        if chart_type == "Line":
-            df_long = data_metric.reset_index().melt(
-                id_vars="Date", var_name="Saham", value_name="Value"
-            )
-            df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
-            df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
+                # --- Slider Y-axis ---
+                q_low, q_high = df_long["Value"].quantile([0.05, 0.95])
+                ymin, ymax = st.slider("Atur Range Y-axis", float(df_long["Value"].min()), float(df_long["Value"].max()), (float(q_low), float(q_high)))
 
-            base = alt.Chart(df_long).mark_line().encode(
-                x="Date:T",
-                y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
-                color="Saham:N",
-                tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
-            )
+                # --- Altair chart ---
+                base = alt.Chart(df_long).mark_line().encode(
+                    x="Date:T",
+                    y=alt.Y("Value:Q", scale=alt.Scale(domain=[ymin, ymax])),
+                    color="Saham:N",
+                    tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
+                )
+                line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5,5], color="orange").encode(
+                    x="Date:T", y=f"MA{ma_period1}:Q", tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
+                )
+                line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2,2], color="blue").encode(
+                    x="Date:T", y=f"MA{ma_period2}:Q", tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
+                )
 
-            line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="orange").encode(
-                x="Date:T",
-                y=f"MA{ma_period1}:Q",
-                tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
-            )
+                st.altair_chart((base + line_ma1 + line_ma2).properties(height=400, title=f"{metric_choice} + MA ({ma_period1} & {ma_period2})"), use_container_width=True)
 
-            line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="blue").encode(
-                x="Date:T",
-                y=f"MA{ma_period2}:Q",
-                tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
-            )
+            elif chart_type == "Candlestick":
+                if len(tickers) > 1:
+                    st.warning("⚠️ Candlestick hanya bisa untuk 1 saham. Menampilkan saham pertama.")
+                ticker = tickers[0].strip()
+                sub_df = data[ticker][["Open","High","Low","Close","Volume"]].reset_index()
+                
+                # --- Hitung MA untuk Candlestick ---
+                if ma_method == "Simple":
+                    sub_df["MA1"] = talib.SMA(sub_df[metric_choice], timeperiod=ma_period1)
+                    sub_df["MA2"] = talib.SMA(sub_df[metric_choice], timeperiod=ma_period2)
+                else:
+                    sub_df["MA1"] = talib.EMA(sub_df[metric_choice], timeperiod=ma_period1)
+                    sub_df["MA2"] = talib.EMA(sub_df[metric_choice], timeperiod=ma_period2)
 
-            final_chart = (base + line_ma1 + line_ma2).properties(
-                title=f"📊 Harga {metric_choice} + MA ({ma_period1} & {ma_period2} Hari)",
-                height=400
-            ).configure_axis(labelFont="Poppins", titleFont="Poppins"
-            ).configure_title(font="Poppins", fontSize=16
-            ).configure_legend(labelFont="Poppins", titleFont="Poppins")
-
-            st.altair_chart(final_chart, use_container_width=True)
-
-        else:  # Candlestick dengan Plotly
-            fig = go.Figure(data=[go.Candlestick(
-                x=data.index,
-                open=data['Open'],
-                high=data['High'],
-                low=data['Low'],
-                close=data['Close'],
-                name="Candlestick"
-            )])
-
-            fig.add_trace(go.Scatter(
-                x=data.index, y=ma1[tickers[0]], line=dict(color='orange', dash='dash'), name=f"MA{ma_period1}"
-            ))
-            fig.add_trace(go.Scatter(
-                x=data.index, y=ma2[tickers[0]], line=dict(color='blue', dash='dot'), name=f"MA{ma_period2}"
-            ))
-
-            fig.update_layout(title=f"📊 Candlestick + MA ({ma_period1} & {ma_period2} Hari)",
-                            xaxis_title="Date", yaxis_title=metric_choice)
-            st.plotly_chart(fig, use_container_width=True)
+                # --- Bokeh candlestick ---
+                candle_chart = create_candle_chart(sub_df, indicators=["MA1","MA2"])
+                st.bokeh_chart(candle_chart, use_container_width=True)
 
 
 
