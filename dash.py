@@ -414,7 +414,7 @@ with col2:
     )
 
     with st.container(border=True):
-        # Pilih metode Moving Average
+    # Pilih metode Moving Average
         ma_methods = ["SMA", "EMA", "WMA", "DEMA", "TEMA"]
         ma_choice = st.selectbox("Pilih Metode Moving Average:", ma_methods)
 
@@ -425,16 +425,20 @@ with col2:
         # Menghitung Moving Average berdasarkan pilihan
         metric = st.session_state.metric_choice
         sma_period = 14  # Periode SMA
+
+        # Mengonversi data ke numpy array sebelum dihitung dengan TA-Lib
+        prices = np.array(data[metric])
+
         if ma_choice == "SMA":
-            ma = talib.SMA(data[metric], timeperiod=sma_period)
+            ma = talib.SMA(prices, timeperiod=sma_period)
         elif ma_choice == "EMA":
-            ma = talib.EMA(data[metric], timeperiod=sma_period)
+            ma = talib.EMA(prices, timeperiod=sma_period)
         elif ma_choice == "WMA":
-            ma = talib.WMA(data[metric], timeperiod=sma_period)
+            ma = talib.WMA(prices, timeperiod=sma_period)
         elif ma_choice == "DEMA":
-            ma = talib.DEMA(data[metric], timeperiod=sma_period)
+            ma = talib.DEMA(prices, timeperiod=sma_period)
         elif ma_choice == "TEMA":
-            ma = talib.TEMA(data[metric], timeperiod=sma_period)
+            ma = talib.TEMA(prices, timeperiod=sma_period)
 
         # Visualisasi dengan Bokeh
         output_notebook()
