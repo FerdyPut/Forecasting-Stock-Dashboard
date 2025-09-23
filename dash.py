@@ -136,12 +136,21 @@ with col2:
             with st.container(border=True):
                 metric_choice = st.session_state.metric_choice
 
-                # --- Pilih data sesuai metric ---
-                if len(tickers) == 1:
-                    # Pastikan hasilnya DataFrame dengan nama kolom = ticker
-                    data_metric = data[metric_choice].to_frame(name=tickers[0])
+                # --- Cek kolom yang ada di 'data' ---
+                st.write(data.columns)  # Menampilkan kolom yang ada
+
+                # --- Pastikan kolom metric_choice ada di data ---
+                if metric_choice in data.columns.get_level_values(0):
+                    if len(tickers) == 1:
+                        # Jika hanya satu ticker, kita ambil kolom metric_choice dan ubah ke DataFrame dengan nama ticker
+                        data_metric = data[metric_choice].xs(tickers[0], axis=1, level=1).to_frame(name=tickers[0])
+                    else:
+                        # Jika lebih dari satu ticker, kita ambil metric_choice tanpa perubahan
+                        data_metric = data[metric_choice]
                 else:
-                    data_metric = data[metric_choice]
+                    # Jika kolom metric_choice tidak ditemukan
+                    st.error(f"⚠️ Metric '{metric_choice}' tidak ditemukan di data.")
+                    return  # Menghentikan eksekusi lebih lanjut jika kolom tidak ditemukan
 
                 # --- Simpan data asli (untuk tabel/opsi lain) ---
                 data_nonnormal = data_metric.copy()
@@ -196,6 +205,7 @@ with col2:
                 )
 
                 st.altair_chart(chart, use_container_width=True)
+
 
 
             # --- Download CSV dengan Hover Box ---
