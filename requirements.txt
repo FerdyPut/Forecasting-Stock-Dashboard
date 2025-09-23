@@ -5,5 +5,3 @@ plotly
 pandas
 seaborn
 bokeh
-ta-lib
-talib
