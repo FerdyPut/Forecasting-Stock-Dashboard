@@ -19,79 +19,6 @@ import numpy as np
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("📈 Dynamic Stock Dashboard")
 
-# Warna untuk indikator
-indicator_colors = {
-    "SMA": "orange", "EMA": "violet", "WMA": "blue", "RSI": "yellow", "MOM": "black", 
-    "DEMA": "red", "MA": "tomato", "TEMA": "dodgerblue"
-}
-
-# Mendapatkan data saham berdasarkan tickers, metrics dan time horizon
-def get_stock_data(tickers, metric, start_date, end_date):
-    # Mendapatkan data untuk semua tickers
-    data = yf.download(tickers, start=start_date, end=end_date)
-    
-    # Mengambil hanya metric yang dipilih
-    if metric not in data.columns:
-        raise ValueError(f"Metric {metric} tidak ada dalam data.")
-    
-    # Ambil hanya harga penutupan jika metric 'Close' dipilih
-    stock_data = data[[metric]]
-    stock_data['Date'] = stock_data.index
-    stock_data['Date_str'] = stock_data['Date'].dt.strftime('%Y-%m-%d')
-    
-    return stock_data
-
-# Fungsi untuk membuat chart
-def create_chart(df, close_line=False, include_vol=False, indicators=[]):
-    ## Candlestick Pattern Logic
-    candle = figure(x_axis_type="datetime", height=500, x_range=(df.Date.values[0], df.Date.values[-1]),
-                    tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
-                              ("Low", "@Low"), ("Close", "@Close")])
-
-    candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=df)
-    candle.segment("Date", "Open", "Date", "Close", line_color="BarColor", line_width=2 if len(df) > 100 else 6, source=df)
-
-    candle.xaxis.axis_label = "Date"
-    candle.yaxis.axis_label = "Price ($)"
-
-    ## Close Price Line
-    if close_line:
-        candle.line("Date", "Close", color="black", source=df)
-
-    # Loop through indicators and add them as lines on the plot
-    for indicator in indicators:
-        if indicator == "SMA":
-            sma = talib.SMA(df["Close"].values, timeperiod=14)  # SMA 14-day
-            candle.line(df["Date"], sma, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-        elif indicator == "EMA":
-            ema = talib.EMA(df["Close"].values, timeperiod=14)  # EMA 14-day
-            candle.line(df["Date"], ema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-        elif indicator == "WMA":
-            wma = talib.WMA(df["Close"].values, timeperiod=14)  # WMA 14-day
-            candle.line(df["Date"], wma, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-        elif indicator == "RSI":
-            rsi = talib.RSI(df["Close"].values, timeperiod=14)  # RSI 14-day
-            candle.line(df["Date"], rsi, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-        elif indicator == "MOM":
-            mom = talib.MOM(df["Close"].values, timeperiod=14)  # MOM 14-day
-            candle.line(df["Date"], mom, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-        elif indicator == "DEMA":
-            dema = talib.DEMA(df["Close"].values, timeperiod=14)  # DEMA 14-day
-            candle.line(df["Date"], dema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-        elif indicator == "TEMA":
-            tema = talib.TEMA(df["Close"].values, timeperiod=14)  # TEMA 14-day
-            candle.line(df["Date"], tema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-
-    ## Volume Bars Logic
-    volume = None
-    if include_vol:
-        volume = figure(x_axis_type="datetime", height=150, x_range=(df.Date.values[0], df.Date.values[-1]))
-        volume.segment("Date", 0, "Date", "Volume", line_width=2 if len(df) > 100 else 6, line_color="BarColor", alpha=0.8, source=df)
-        volume.yaxis.axis_label = "Volume"
-
-    return column(children=[candle, volume], sizing_mode="scale_width") if volume else candle
-
-
 # --- Layout 2 kolom ---
 col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
 
@@ -487,7 +414,81 @@ with col2:
         """, unsafe_allow_html=True
     )
 
-    with st.container(border=True):       
+    with st.container(border=True):     
+
+        # Warna untuk indikator
+        indicator_colors = {
+            "SMA": "orange", "EMA": "violet", "WMA": "blue", "RSI": "yellow", "MOM": "black", 
+            "DEMA": "red", "MA": "tomato", "TEMA": "dodgerblue"
+        }
+
+        # Mendapatkan data saham berdasarkan tickers, metrics dan time horizon
+        def get_stock_data(tickers, metric, start_date, end_date):
+            # Mendapatkan data untuk semua tickers
+            data = yf.download(tickers, start=start_date, end=end_date)
+            
+            # Mengambil hanya metric yang dipilih
+            if metric not in data.columns:
+                raise ValueError(f"Metric {metric} tidak ada dalam data.")
+            
+            # Ambil hanya harga penutupan jika metric 'Close' dipilih
+            stock_data = data[[metric]]
+            stock_data['Date'] = stock_data.index
+            stock_data['Date_str'] = stock_data['Date'].dt.strftime('%Y-%m-%d')
+            
+            return stock_data
+
+        # Fungsi untuk membuat chart
+        def create_chart(df, close_line=False, include_vol=False, indicators=[]):
+            ## Candlestick Pattern Logic
+            candle = figure(x_axis_type="datetime", height=500, x_range=(df.Date.values[0], df.Date.values[-1]),
+                            tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
+                                    ("Low", "@Low"), ("Close", "@Close")])
+
+            candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=df)
+            candle.segment("Date", "Open", "Date", "Close", line_color="BarColor", line_width=2 if len(df) > 100 else 6, source=df)
+
+            candle.xaxis.axis_label = "Date"
+            candle.yaxis.axis_label = "Price ($)"
+
+            ## Close Price Line
+            if close_line:
+                candle.line("Date", "Close", color="black", source=df)
+
+            # Loop through indicators and add them as lines on the plot
+            for indicator in indicators:
+                if indicator == "SMA":
+                    sma = talib.SMA(df["Close"].values, timeperiod=14)  # SMA 14-day
+                    candle.line(df["Date"], sma, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                elif indicator == "EMA":
+                    ema = talib.EMA(df["Close"].values, timeperiod=14)  # EMA 14-day
+                    candle.line(df["Date"], ema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                elif indicator == "WMA":
+                    wma = talib.WMA(df["Close"].values, timeperiod=14)  # WMA 14-day
+                    candle.line(df["Date"], wma, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                elif indicator == "RSI":
+                    rsi = talib.RSI(df["Close"].values, timeperiod=14)  # RSI 14-day
+                    candle.line(df["Date"], rsi, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                elif indicator == "MOM":
+                    mom = talib.MOM(df["Close"].values, timeperiod=14)  # MOM 14-day
+                    candle.line(df["Date"], mom, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                elif indicator == "DEMA":
+                    dema = talib.DEMA(df["Close"].values, timeperiod=14)  # DEMA 14-day
+                    candle.line(df["Date"], dema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                elif indicator == "TEMA":
+                    tema = talib.TEMA(df["Close"].values, timeperiod=14)  # TEMA 14-day
+                    candle.line(df["Date"], tema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+
+            ## Volume Bars Logic
+            volume = None
+            if include_vol:
+                volume = figure(x_axis_type="datetime", height=150, x_range=(df.Date.values[0], df.Date.values[-1]))
+                volume.segment("Date", 0, "Date", "Volume", line_width=2 if len(df) > 100 else 6, line_color="BarColor", alpha=0.8, source=df)
+                volume.yaxis.axis_label = "Volume"
+
+            return column(children=[candle, volume], sizing_mode="scale_width") if volume else candle
+
+
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
