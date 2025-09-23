@@ -11,6 +11,7 @@ import altair as alt
 from bokeh.plotting import figure, column
 import talib
 import numpy as np
+from bokeh.models import DataRange1d
 
 # --- Page Config ---
 
@@ -423,9 +424,9 @@ with col2:
         # Fungsi untuk membuat chart
         def create_chart(df, close_line=False, include_vol=False, indicators=[]):
             ## Candlestick Pattern Logic
-            candle = figure(x_axis_type="datetime", height=500, x_range=(df.Date.values[0], df.Date.values[-1]),
-                            tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
-                                    ("Low", "@Low"), ("Close", "@Close")])
+            candle = figure(x_axis_type="datetime", height=500, x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()),
+                tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
+                            ("Low", "@Low"), ("Close", "@Close")])
 
             candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=df)
             candle.segment("Date", "Open", "Date", "Close", line_color="BarColor", line_width=2 if len(df) > 100 else 6, source=df)
@@ -445,21 +446,6 @@ with col2:
                 elif indicator == "EMA":
                     ema = talib.EMA(df["Close"].values, timeperiod=14)  # EMA 14-day
                     candle.line(df["Date"], ema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-                elif indicator == "WMA":
-                    wma = talib.WMA(df["Close"].values, timeperiod=14)  # WMA 14-day
-                    candle.line(df["Date"], wma, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-                elif indicator == "RSI":
-                    rsi = talib.RSI(df["Close"].values, timeperiod=14)  # RSI 14-day
-                    candle.line(df["Date"], rsi, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-                elif indicator == "MOM":
-                    mom = talib.MOM(df["Close"].values, timeperiod=14)  # MOM 14-day
-                    candle.line(df["Date"], mom, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-                elif indicator == "DEMA":
-                    dema = talib.DEMA(df["Close"].values, timeperiod=14)  # DEMA 14-day
-                    candle.line(df["Date"], dema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
-                elif indicator == "TEMA":
-                    tema = talib.TEMA(df["Close"].values, timeperiod=14)  # TEMA 14-day
-                    candle.line(df["Date"], tema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
 
             ## Volume Bars Logic
             volume = None
