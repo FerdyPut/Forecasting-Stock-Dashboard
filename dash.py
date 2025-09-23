@@ -423,19 +423,6 @@ with col2:
             "DEMA": "red", "MA": "tomato", "TEMA": "dodgerblue"
         }
 
-        # Fungsi untuk mendapatkan data saham
-        def get_stock_data(tickers, metric, start_date, end_date):
-            data = yf.download(tickers, start=start_date, end=end_date)
-            
-            if metric not in data.columns:
-                raise ValueError(f"Metric {metric} tidak ada dalam data.")
-            
-            stock_data = data[[metric]]
-            stock_data['Date'] = stock_data.index  # Mengubah indeks menjadi kolom 'Date'
-            stock_data['Date_str'] = stock_data['Date'].dt.strftime('%Y-%m-%d')  # Format string untuk tooltip
-            
-            return stock_data
-
         # Fungsi untuk membuat chart
         def create_chart(df, close_line=False, include_vol=False, indicators=[]):
             # Membuat ColumnDataSource untuk Bokeh
@@ -488,8 +475,5 @@ with col2:
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
-        # Ambil data saham berdasarkan pilihan
-        df = get_stock_data(tickers, metric_choice, start_date, end_date)
-
         # Menampilkan chart
-        st.bokeh_chart(create_chart(df,indicators=indicators), use_container_width=True)
+        st.bokeh_chart(create_chart(data_metric,indicators=indicators), use_container_width=True)
