@@ -11,8 +11,7 @@ import altair as alt
 from bokeh.plotting import figure, column
 import talib
 import numpy as np
-from bokeh.models import ColumnDataSource, DataRange1d
-from bokeh.layouts import column
+from streamlit_bokeh import streamlit_bokeh
 
 # --- Page Config ---
 
@@ -491,4 +490,4 @@ with col2:
         df = get_stock_data(tickers, metric_choice, start_date, end_date)
 
         # Menampilkan chart
-        st.bokeh_chart(df, use_container_width=True)
+        st.bokeh_chart(create_chart(df,indicators=indicators), use_container_width=True)
