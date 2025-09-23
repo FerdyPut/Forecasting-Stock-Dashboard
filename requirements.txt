@@ -5,4 +5,4 @@ plotly
 pandas
 seaborn
 bokeh==2.4.3
-ta-lib
+numpy
