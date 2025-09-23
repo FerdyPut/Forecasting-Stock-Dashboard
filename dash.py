@@ -415,78 +415,80 @@ with col2:
 
     # --- Container ---
     with st.container(border=True):
-        # Pilih metric
-        metric_choice = st.selectbox("Pilih Metric", ["Close", "Volume"], index=0)
+            # Pilih metric
+            metric_choice = st.selectbox("Pilih Metric", ["Close", "Volume"], index=0)
 
-        # Pilih chart type
-        chart_type = st.selectbox("Pilih Tipe Chart", ["Line", "Candlestick"])
+            # Pilih chart type
+            chart_type = st.selectbox("Pilih Tipe Chart", ["Line", "Candlestick"])
 
-        # Pilih periode MA
-        ma_options = [10, 20, 50, 100, 200]
-        ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
-        ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
+            # --- Disable / Warning Candlestick untuk multi-saham ---
+            if chart_type == "Candlestick" and len(tickers) > 1:
+                st.warning("⚠️ Candlestick hanya bisa untuk 1 saham. Mengubah pilihan ke Line chart.")
+                chart_type = "Line"  # otomatis fallback ke Line chart
 
-        # Pilih metode MA
-        ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
+            # Pilih periode MA
+            ma_options = [10, 20, 50, 100, 200]
+            ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
+            ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
 
-        # --- Pilih data metric ---
-        if len(tickers) == 1:
-            data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
-        else:
-            data_metric = data[metric_choice]
+            # Pilih metode MA
+            ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
 
-        # --- Normalisasi (kecuali Volume) ---
-        if metric_choice != "Volume":
-            data_metric = data_metric / data_metric.iloc[0]
+            # --- Pilih data metric ---
+            if len(tickers) == 1:
+                data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+            else:
+                data_metric = data[metric_choice]
 
-        # --- Hitung MA ---
-        if ma_method == "Simple":
-            ma1 = data_metric.rolling(ma_period1).mean()
-            ma2 = data_metric.rolling(ma_period2).mean()
-        else:
-            ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
-            ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
+            # --- Normalisasi (kecuali Volume) ---
+            if metric_choice != "Volume":
+                data_metric = data_metric / data_metric.iloc[0]
 
-        # --- Plot Line Chart ---
-        if chart_type == "Line":
-            df_long = data_metric.reset_index().melt(
-                id_vars="Date", var_name="Saham", value_name="Value"
-            )
-            df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
-            df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
+            # --- Hitung MA ---
+            if ma_method == "Simple":
+                ma1 = data_metric.rolling(ma_period1).mean()
+                ma2 = data_metric.rolling(ma_period2).mean()
+            else:
+                ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
+                ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
 
-            base = alt.Chart(df_long).mark_line().encode(
-                x="Date:T",
-                y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
-                color="Saham:N",
-                tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
-            )
+            # --- Plot Line Chart ---
+            if chart_type == "Line":
+                df_long = data_metric.reset_index().melt(
+                    id_vars="Date", var_name="Saham", value_name="Value"
+                )
+                df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
+                df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
 
-            line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="orange").encode(
-                x="Date:T",
-                y=f"MA{ma_period1}:Q",
-                tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
-            )
+                base = alt.Chart(df_long).mark_line().encode(
+                    x="Date:T",
+                    y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
+                    color="Saham:N",
+                    tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
+                )
 
-            line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="blue").encode(
-                x="Date:T",
-                y=f"MA{ma_period2}:Q",
-                tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
-            )
+                line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="orange").encode(
+                    x="Date:T",
+                    y=f"MA{ma_period1}:Q",
+                    tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
+                )
 
-            final_chart = (base + line_ma1 + line_ma2).properties(
-                title=f"📊 {metric_choice} + MA ({ma_period1} & {ma_period2})",
-                height=400
-            ).configure_axis(labelFont="Poppins", titleFont="Poppins"
-            ).configure_title(font="Poppins", fontSize=16
-            ).configure_legend(labelFont="Poppins", titleFont="Poppins")
+                line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="blue").encode(
+                    x="Date:T",
+                    y=f"MA{ma_period2}:Q",
+                    tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
+                )
 
-            st.altair_chart(final_chart, use_container_width=True)
+                final_chart = (base + line_ma1 + line_ma2).properties(
+                    title=f"📊 {metric_choice} + MA ({ma_period1} & {ma_period2})",
+                    height=400
+                ).configure_axis(labelFont="Poppins", titleFont="Poppins"
+                ).configure_title(font="Poppins", fontSize=16
+                ).configure_legend(labelFont="Poppins", titleFont="Poppins")
 
-        # --- Plot Candlestick ---
-        else:
-            if len(tickers) > 1:
-                st.warning("Candlestick hanya bisa untuk 1 saham.")
+                st.altair_chart(final_chart, use_container_width=True)
+
+            # --- Plot Candlestick ---
             else:
                 fig = go.Figure(data=[go.Candlestick(
                     x=data.index,
@@ -512,7 +514,6 @@ with col2:
                     height=400
                 )
                 st.plotly_chart(fig, use_container_width=True)
-
 
 
 
