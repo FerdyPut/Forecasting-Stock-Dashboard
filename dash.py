@@ -474,8 +474,5 @@ with col2:
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
-        # Ambil data saham berdasarkan pilihan
-        df = data_metric
+        st.bokeh_chart(create_chart(data_metric, indicators=indicators), use_container_width=True)
 
-        # Menampilkan chart
-        st.bokeh_chart(create_chart(df, indicators=indicators), use_container_width=True)
