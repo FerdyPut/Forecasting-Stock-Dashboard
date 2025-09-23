@@ -422,7 +422,19 @@ with col2:
             "DEMA": "red", "MA": "tomato", "TEMA": "dodgerblue"
         }
 
-        # Fungsi untuk membuat chart
+        # Fungsi untuk mendapatkan data saham
+        def get_stock_data(tickers, metric, start_date, end_date):
+            data = yf.download(tickers, start=start_date, end=end_date)
+            
+            if metric not in data.columns:
+                raise ValueError(f"Metric {metric} tidak ada dalam data.")
+            
+            stock_data = data[[metric]]
+            stock_data['Date'] = stock_data.index  # Mengubah indeks menjadi kolom 'Date'
+            stock_data['Date_str'] = stock_data['Date'].dt.strftime('%Y-%m-%d')  # Format string untuk tooltip
+            
+            return stock_data
+
         # Fungsi untuk membuat chart
         def create_chart(df, close_line=False, include_vol=False, indicators=[]):
             # Membuat ColumnDataSource untuk Bokeh
@@ -467,14 +479,17 @@ with col2:
             if include_vol:
                 volume = figure(x_axis_type="datetime", height=150, 
                                 x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()))
-                volume.segment("Date", 0, "Date", "Volume", line_width=2, line_color="blue", alpha=0.8, source=source)
+                volume.vbar(x="Date", top="Volume", width=0.5, color="blue", source=source)
                 volume.yaxis.axis_label = "Volume"
 
             # Return the chart
             return column(children=[candle, volume], sizing_mode="scale_width") if volume else candle
-
+        
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
-        st.bokeh_chart(create_chart(data_metric, indicators=indicators), use_container_width=True)
+        # Ambil data saham berdasarkan pilihan
+        df = get_stock_data(tickers, metric_choice, start_date, end_date)
 
+        # Menampilkan chart
+        st.bokeh_chart(create_chart(df, close_line=True, include_vol=True, indicators=indicators), use_container_width=True)
