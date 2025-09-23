@@ -437,14 +437,11 @@ with col2:
         ma_options = [10, 20, 50, 100, 200]
         ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
         ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
-        ma_method = st.selectbox("Pilih Metode MA", ["Gaussian Smoothing", "Exponential Smoothing"])
+        ma_method = st.checkbox("Exponential Smoothing")
 
         if ma_method == "Exponential Smoothing":
             ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
             ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
-        elif ma_method == "Gaussian Smoothing":
-            ma1 = gaussian_filter1d(data_metric, sigma=ma_period1)
-            ma2 = gaussian_filter1d(data_metric, sigma=ma_period2)
 
         # --- Reshape ke long format untuk Altair ---
         if single_saham:
@@ -483,7 +480,6 @@ with col2:
         )
 
         # --- Line chart Altair ---
-        st.write(f"### 📊 Smoothing Saham {metric_choice}")
         base = alt.Chart(df_long).mark_line().encode(
             x=alt.X("Date:T", title="Date"),
             y=alt.Y(
