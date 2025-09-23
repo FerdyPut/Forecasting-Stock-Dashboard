@@ -140,6 +140,10 @@ with col2:
                 else:
                     data_metric = data[metric_choice]
 
+                # --- Pastikan selalu DataFrame (jika 1 saham) ---
+                if isinstance(data_metric, pd.Series):
+                    data_metric = data_metric.to_frame(name=tickers[0])
+
                 # --- Simpan data asli (untuk tabel/opsi lain) ---
                 data_nonnormal = data_metric.copy()
 
@@ -193,7 +197,6 @@ with col2:
                 )
 
                 st.altair_chart(chart, use_container_width=True)
-
 
             # --- Download CSV dengan Hover Box ---
             csv_string = data.to_csv(index=True)
