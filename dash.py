@@ -415,60 +415,114 @@ with col2:
         """, unsafe_allow_html=True
     )
 
-    with st.container(border=True):     
-        # Function to create chart using Altair
-        def create_chart(df, moving_averages):
-            # Prepare the base chart
-            base = alt.Chart(df).encode(
-                x='Date:T'
+    with st.container(border=True):
+        metric_choice = st.session_state.metric_choice
+
+        # --- Pilih data sesuai metric ---
+        if len(tickers) == 1:
+            data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+            single_saham = True
+        else:
+            data_metric = data[metric_choice]
+            single_saham = False
+
+        # --- Pastikan selalu DataFrame ---
+        if isinstance(data_metric, pd.Series):
+            data_metric = data_metric.to_frame(name=tickers[0])
+
+        # --- Simpan data asli ---
+        data_nonnormal = data_metric.copy()
+
+        # --- Normalisasi (kecuali Volume) ---
+        if metric_choice != "Volume":
+            data_metric = data_metric / data_metric.iloc[0]
+
+        # --- Hitung MA (opsional) ---
+        ma_options = [10, 20, 50, 100, 200]
+        ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
+        ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
+        ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
+
+        if ma_method == "Simple":
+            ma1 = data_metric.rolling(ma_period1).mean()
+            ma2 = data_metric.rolling(ma_period2).mean()
+        else:
+            ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
+            ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
+
+        # --- Reshape ke long format untuk Altair ---
+        if single_saham:
+            values = data_metric.iloc[:, 0].values  # pastikan 1D
+            df_long = pd.DataFrame({
+                "Date": data_metric.index,
+                "Saham": tickers[0],
+                "Value": values
+            })
+            df_ma1 = pd.DataFrame({
+                "Date": ma1.index,
+                "Saham": tickers[0],
+                f"MA{ma_period1}": ma1.iloc[:, 0].values
+            })
+            df_ma2 = pd.DataFrame({
+                "Date": ma2.index,
+                "Saham": tickers[0],
+                f"MA{ma_period2}": ma2.iloc[:, 0].values
+            })
+        else:
+            df_long = data_metric.reset_index().melt(
+                id_vars="Date", var_name="Saham", value_name="Value"
             )
-            
-            # Base line chart for 'Close' price
-            chart = base.mark_line().encode(
-                y='Close:Q',
-                color=alt.value('black'),
-            ).properties(
-                width=800,
-                height=400
-            )
-            
-            # Add Moving Averages
-            for ma in moving_averages:
-                if ma == "SMA":
-                    sma = talib.SMA(df['Close'].values, timeperiod=14)
-                    sma_df = df[['Date']].copy()
-                    sma_df['SMA'] = sma
-                    sma_chart = alt.Chart(sma_df).mark_line(color='orange').encode(
-                        x='Date:T',
-                        y='SMA:Q'
-                    )
-                    chart = chart + sma_chart
+            df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
+            df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
 
-                elif ma == "EMA":
-                    ema = talib.EMA(df['Close'].values, timeperiod=14)
-                    ema_df = df[['Date']].copy()
-                    ema_df['EMA'] = ema
-                    ema_chart = alt.Chart(ema_df).mark_line(color='blue').encode(
-                        x='Date:T',
-                        y='EMA:Q'
-                    )
-                    chart = chart + ema_chart
+        # --- Hitung quantile untuk default scale ---
+        q_low, q_high = df_long["Value"].quantile([0.05, 0.95])
 
-                elif ma == "WMA":
-                    wma = talib.WMA(df['Close'].values, timeperiod=14)
-                    wma_df = df[['Date']].copy()
-                    wma_df['WMA'] = wma
-                    wma_chart = alt.Chart(wma_df).mark_line(color='green').encode(
-                        x='Date:T',
-                        y='WMA:Q'
-                    )
-                    chart = chart + wma_chart
+        # --- Slider manual untuk atur range Y ---
+        ymin, ymax = st.slider(
+            "Atur Range Y-axis",
+            float(df_long["Value"].min()),
+            float(df_long["Value"].max()),
+            (float(q_low), float(q_high))
+        )
 
-            return chart
+        # --- Line chart Altair ---
+        st.write(f"### 📊 Perbandingan Harga {metric_choice} Saham")
+        base = alt.Chart(df_long).mark_line().encode(
+            x=alt.X("Date:T", title="Date"),
+            y=alt.Y(
+                "Value:Q",
+                title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
+                scale=alt.Scale(domain=[ymin, ymax])
+            ),
+            color=alt.Color("Saham:N", title="Saham"),
+            tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
+        )
 
-        # Multiple choices for Moving Averages (MA)
-        moving_average_choices = st.multiselect("Pilih Moving Average", ["SMA", "EMA", "WMA"])
+        line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="orange").encode(
+            x="Date:T",
+            y=f"MA{ma_period1}:Q",
+            tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
+        )
 
-        # Display the chart if any Moving Average is selected
-        if moving_average_choices:
-            st.altair_chart(create_chart(data_metric, moving_averages=moving_average_choices), use_container_width=True)
+        line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="blue").encode(
+            x="Date:T",
+            y=f"MA{ma_period2}:Q",
+            tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
+        )
+
+        final_chart = (base + line_ma1 + line_ma2).properties(
+            title=f"📊 Harga {metric_choice} + MA ({ma_period1} & {ma_period2})",
+            height=400
+        ).configure_axis(
+            labelFont="Poppins",
+            titleFont="Poppins"
+        ).configure_title(
+            font="Poppins",
+            fontSize=16
+        ).configure_legend(
+            labelFont="Poppins",
+            titleFont="Poppins"
+        )
+
+        st.altair_chart(final_chart, use_container_width=True)
