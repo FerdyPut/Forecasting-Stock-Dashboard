@@ -138,7 +138,8 @@ with col2:
 
                 # --- Pilih data sesuai metric ---
                 if len(tickers) == 1:
-                    data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+                    # Pastikan hasilnya DataFrame dengan nama kolom = ticker
+                    data_metric = data[metric_choice].to_frame(name=tickers[0])
                 else:
                     data_metric = data[metric_choice]
 
