@@ -415,7 +415,7 @@ with col2:
     )
 
     with st.container(border=True):
-    # Pilih metode Moving Average
+# Pilih metode Moving Average
         ma_methods = ["SMA", "EMA", "WMA", "DEMA", "TEMA"]
         ma_choice = st.selectbox("Pilih Metode Moving Average:", ma_methods)
 
@@ -428,33 +428,38 @@ with col2:
         sma_period = 14  # Periode SMA
 
         # Mengonversi data ke numpy array sebelum dihitung dengan TA-Lib
-        prices = np.array(data[metric])
+        prices = np.array(data[metric].dropna())  # Hapus NaN sebelum dihitung
 
-        if ma_choice == "SMA":
-            ma = talib.SMA(prices, timeperiod=sma_period)
-        elif ma_choice == "EMA":
-            ma = talib.EMA(prices, timeperiod=sma_period)
-        elif ma_choice == "WMA":
-            ma = talib.WMA(prices, timeperiod=sma_period)
-        elif ma_choice == "DEMA":
-            ma = talib.DEMA(prices, timeperiod=sma_period)
-        elif ma_choice == "TEMA":
-            ma = talib.TEMA(prices, timeperiod=sma_period)
+        # Cek apakah prices kosong setelah dropna
+        if prices.size == 0:
+            st.error("Data harga saham kosong atau hanya berisi nilai NaN.")
+        else:
+            # Menghitung Moving Average
+            if ma_choice == "SMA":
+                ma = talib.SMA(prices, timeperiod=sma_period)
+            elif ma_choice == "EMA":
+                ma = talib.EMA(prices, timeperiod=sma_period)
+            elif ma_choice == "WMA":
+                ma = talib.WMA(prices, timeperiod=sma_period)
+            elif ma_choice == "DEMA":
+                ma = talib.DEMA(prices, timeperiod=sma_period)
+            elif ma_choice == "TEMA":
+                ma = talib.TEMA(prices, timeperiod=sma_period)
 
-        # Visualisasi dengan Bokeh
-        output_notebook()
+            # Visualisasi dengan Bokeh
+            output_notebook()
 
-        p = figure(title=f"Stock Prices and {ma_choice} Moving Average", x_axis_label='Date', y_axis_label='Price', x_axis_type='datetime', plot_height=400, plot_width=800)
+            p = figure(title=f"Stock Prices and {ma_choice} Moving Average", x_axis_label='Date', y_axis_label='Price', x_axis_type='datetime', plot_height=400, plot_width=800)
 
-        # Plot harga saham
-        p.line(data.index, data[metric], legend_label="Price", line_width=2, color="blue")
+            # Plot harga saham
+            p.line(data.index, data[metric], legend_label="Price", line_width=2, color="blue")
 
-        # Plot Moving Average
-        p.line(data.index[sma_period-1:], ma[sma_period-1:], legend_label=f"{ma_choice} ({sma_period} days)", line_width=2, color="red")
+            # Plot Moving Average
+            p.line(data.index[sma_period-1:], ma[sma_period-1:], legend_label=f"{ma_choice} ({sma_period} days)", line_width=2, color="red")
 
-        # Tampilkan plot
-        show(p)
-        
+            # Tampilkan plot
+            show(p)
+                
  
 
 
