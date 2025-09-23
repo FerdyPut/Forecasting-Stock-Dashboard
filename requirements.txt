@@ -4,6 +4,5 @@ prophet
 plotly
 pandas
 seaborn
-bokeh==2.4.3
-numpy<2
-ta-lib
+scipy
+numpy
