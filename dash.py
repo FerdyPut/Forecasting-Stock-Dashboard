@@ -419,58 +419,39 @@ with col2:
 
         # Warna untuk indikator
         indicator_colors = {
-            "SMA": "orange", "EMA": "violet", "WMA": "blue", "RSI": "yellow", "MOM": "black", 
-            "DEMA": "red", "MA": "tomato", "TEMA": "dodgerblue"
+            "SMA": "orange"
         }
 
         # Fungsi untuk membuat chart
-        def create_chart(df, close_line=False, include_vol=False, indicators=[]):
-            # Membuat ColumnDataSource untuk Bokeh
+        def create_chart(df, close_line=False, include_vol=False):
             source = ColumnDataSource(df)
 
-            # Candlestick Chart
             candle = figure(x_axis_type="datetime", height=500, 
                             tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
                                     ("Low", "@Low"), ("Close", "@Close")])
-            
+
             # Candlestick segments
             candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=source)
-            candle.vbar("Date", top="Open", bottom="Close", width=0.5, color="green", source=source, legend_label="Up")  # Up bar
-            candle.vbar("Date", top="Close", bottom="Open", width=0.5, color="red", source=source, legend_label="Down")  # Down bar
-
-            # Axis labels
-            candle.xaxis.axis_label = "Date"
-            candle.yaxis.axis_label = "Price ($)"
+            candle.vbar("Date", top="Open", bottom="Close", width=0.5, color="green", source=source, legend_label="Up")
+            candle.vbar("Date", top="Close", bottom="Open", width=0.5, color="red", source=source, legend_label="Down")
 
             # Close Price Line
             if close_line:
                 candle.line("Date", "Close", color="black", source=source)
 
-            # Loop for adding technical indicators
-            for indicator in indicators:
-                if indicator == "SMA":
-                    sma = talib.SMA(df["Close"].values, timeperiod=14)  # SMA 14-day
-                    candle.line(df["Date"], sma, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
-                elif indicator == "EMA":
-                    ema = talib.EMA(df["Close"].values, timeperiod=14)  # EMA 14-day
-                    candle.line(df["Date"], ema, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
-                elif indicator == "WMA":
-                    wma = talib.WMA(df["Close"].values, timeperiod=14)  # WMA 14-day
-                    candle.line(df["Date"], wma, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
-                elif indicator == "RSI":
-                    rsi = talib.RSI(df["Close"].values, timeperiod=14)  # RSI 14-day
-                    candle.line(df["Date"], rsi, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
+            # SMA (Simple Moving Average)
+            sma = talib.SMA(df["Close"].values, timeperiod=14)
+            candle.line(df["Date"], sma, color="orange", line_width=2, source=source, legend_label="SMA")
 
             # Volume Bars Logic
-            volume = None
             if include_vol:
                 volume = figure(x_axis_type="datetime", height=150, 
                                 x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()))
                 volume.vbar(x="Date", top="Volume", width=0.5, color="blue", source=source)
                 volume.yaxis.axis_label = "Volume"
-
-            # Return the chart
-            return column(children=[candle, volume], sizing_mode="scale_width") if volume else candle
+                return column(children=[candle, volume], sizing_mode="scale_width")
+            
+            return candle
         
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
