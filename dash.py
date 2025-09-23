@@ -452,4 +452,4 @@ with col2:
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
         # Menampilkan chart
-        st.bokeh_chart(create_chart(data_metric, indicators), use_container_width=True)
+        st.bokeh_chart(create_chart(data_metric, indicators=indicators), use_container_width=True)
