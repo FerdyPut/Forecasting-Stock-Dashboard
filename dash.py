@@ -416,37 +416,59 @@ with col2:
     )
 
     with st.container(border=True):     
-
-        # Fungsi untuk membuat chart
-        def create_chart(df, indicators):
-            source = ColumnDataSource(df)
+        # Function to create chart using Altair
+        def create_chart(df, moving_averages):
+            # Prepare the base chart
+            base = alt.Chart(df).encode(
+                x='Date:T'
+            )
             
-            # Candlestick chart setup
-            candle = figure(x_axis_type="datetime", height=500, 
-                            tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
-                                    ("Low", "@Low"), ("Close", "@Close")])
-
-            # Candlestick segments
-            candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=source)
-            candle.vbar("Date", top="Open", bottom="Close", width=0.5, color="green", source=source, legend_label="Up")
-            candle.vbar("Date", top="Close", bottom="Open", width=0.5, color="red", source=source, legend_label="Down")
+            # Base line chart for 'Close' price
+            chart = base.mark_line().encode(
+                y='Close:Q',
+                color=alt.value('black'),
+            ).properties(
+                width=800,
+                height=400
+            )
             
-            # Apply selected indicators
-            for indicator in indicators:
-                if indicator == "SMA":
-                    sma = talib.SMA(df['Close'].values, timeperiod=14)  # 'Close' column is used for SMA
-                    candle.line(df['Date'], sma, color="orange", line_width=2, source=source, legend_label="SMA")
+            # Add Moving Averages
+            for ma in moving_averages:
+                if ma == "SMA":
+                    sma = talib.SMA(df['Close'].values, timeperiod=14)
+                    sma_df = df[['Date']].copy()
+                    sma_df['SMA'] = sma
+                    sma_chart = alt.Chart(sma_df).mark_line(color='orange').encode(
+                        x='Date:T',
+                        y='SMA:Q'
+                    )
+                    chart = chart + sma_chart
 
-                # Add more indicator conditions here (e.g., EMA, RSI)
-                elif indicator == "EMA":
+                elif ma == "EMA":
                     ema = talib.EMA(df['Close'].values, timeperiod=14)
-                    candle.line(df['Date'], ema, color="blue", line_width=2, source=source, legend_label="EMA")
+                    ema_df = df[['Date']].copy()
+                    ema_df['EMA'] = ema
+                    ema_chart = alt.Chart(ema_df).mark_line(color='blue').encode(
+                        x='Date:T',
+                        y='EMA:Q'
+                    )
+                    chart = chart + ema_chart
 
-            return candle
+                elif ma == "WMA":
+                    wma = talib.WMA(df['Close'].values, timeperiod=14)
+                    wma_df = df[['Date']].copy()
+                    wma_df['WMA'] = wma
+                    wma_chart = alt.Chart(wma_df).mark_line(color='green').encode(
+                        x='Date:T',
+                        y='WMA:Q'
+                    )
+                    chart = chart + wma_chart
 
-        # Pilih indikator
-        indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
+            return chart
 
-        # Menampilkan chart
-        if indicators:
-            st.bokeh_chart(create_chart(data_metric, indicators=indicators), use_container_width=True)
+        # Multiple choices for Moving Averages (MA)
+        moving_average_choices = st.multiselect("Pilih Moving Average", ["SMA", "EMA", "WMA"])
+
+        # Display the chart if any Moving Average is selected
+        if moving_average_choices:
+            st.altair_chart(create_chart(data_metric, moving_averages=moving_average_choices), use_container_width=True)
