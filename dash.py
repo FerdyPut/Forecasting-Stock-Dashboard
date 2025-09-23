@@ -437,12 +437,12 @@ with col2:
         ma_options = [10, 20, 50, 100, 200]
         ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
         ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
-        ma_method = st.checkbox("Exponential Smoothing")
+        ma_method = st.selectbox("Metode MA", ["Exponential Smoothing"])
 
-        if ma_method == "Exponential Smoothing":
-            ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
-            ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
 
+        ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
+        ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
+            
         # --- Reshape ke long format untuk Altair ---
         if single_saham:
             values = data_metric.iloc[:, 0].values  # pastikan 1D
