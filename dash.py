@@ -11,7 +11,8 @@ import altair as alt
 from bokeh.plotting import figure, column
 import talib
 import numpy as np
-from bokeh.models import DataRange1d
+from bokeh.models import ColumnDataSource, DataRange1d
+from bokeh.layouts import column
 
 # --- Page Config ---
 
@@ -422,40 +423,55 @@ with col2:
         }
 
         # Fungsi untuk membuat chart
+        # Fungsi untuk membuat chart
         def create_chart(df, close_line=False, include_vol=False, indicators=[]):
-            ## Candlestick Pattern Logic
-            candle = figure(x_axis_type="datetime", height=500, x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()),
-                tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
-                            ("Low", "@Low"), ("Close", "@Close")])
+            # Membuat ColumnDataSource untuk Bokeh
+            source = ColumnDataSource(df)
 
-            candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=df)
-            candle.segment("Date", "Open", "Date", "Close", line_color="BarColor", line_width=2 if len(df) > 100 else 6, source=df)
+            # Candlestick Chart
+            candle = figure(x_axis_type="datetime", height=500, 
+                            x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()), 
+                            tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
+                                    ("Low", "@Low"), ("Close", "@Close")])
+            
+            # Candlestick segments
+            candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=source)
+            candle.vbar("Date", top="Open", bottom="Close", width=0.5, color="green", source=source, legend_label="Up")  # Up bar
+            candle.vbar("Date", top="Close", bottom="Open", width=0.5, color="red", source=source, legend_label="Down")  # Down bar
 
+            # Axis labels
             candle.xaxis.axis_label = "Date"
             candle.yaxis.axis_label = "Price ($)"
 
-            ## Close Price Line
+            # Close Price Line
             if close_line:
-                candle.line("Date", "Close", color="black", source=df)
+                candle.line("Date", "Close", color="black", source=source)
 
-            # Loop through indicators and add them as lines on the plot
+            # Loop for adding technical indicators
             for indicator in indicators:
                 if indicator == "SMA":
                     sma = talib.SMA(df["Close"].values, timeperiod=14)  # SMA 14-day
-                    candle.line(df["Date"], sma, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                    candle.line(df["Date"], sma, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
                 elif indicator == "EMA":
                     ema = talib.EMA(df["Close"].values, timeperiod=14)  # EMA 14-day
-                    candle.line(df["Date"], ema, color=indicator_colors[indicator], line_width=2, source=df, legend_label=indicator)
+                    candle.line(df["Date"], ema, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
+                elif indicator == "WMA":
+                    wma = talib.WMA(df["Close"].values, timeperiod=14)  # WMA 14-day
+                    candle.line(df["Date"], wma, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
+                elif indicator == "RSI":
+                    rsi = talib.RSI(df["Close"].values, timeperiod=14)  # RSI 14-day
+                    candle.line(df["Date"], rsi, color=indicator_colors[indicator], line_width=2, source=source, legend_label=indicator)
 
-            ## Volume Bars Logic
+            # Volume Bars Logic
             volume = None
             if include_vol:
-                volume = figure(x_axis_type="datetime", height=150, x_range=(df.Date.values[0], df.Date.values[-1]))
-                volume.segment("Date", 0, "Date", "Volume", line_width=2 if len(df) > 100 else 6, line_color="BarColor", alpha=0.8, source=df)
+                volume = figure(x_axis_type="datetime", height=150, 
+                                x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()))
+                volume.segment("Date", 0, "Date", "Volume", line_width=2, line_color="blue", alpha=0.8, source=source)
                 volume.yaxis.axis_label = "Volume"
 
+            # Return the chart
             return column(children=[candle, volume], sizing_mode="scale_width") if volume else candle
-
 
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
