@@ -14,6 +14,7 @@ import numpy as np
 from bokeh.models import ColumnDataSource, DataRange1d
 from bokeh.layouts import column
 from streamlit_bokeh import streamlit_bokeh
+from scipy.ndimage import gaussian_filter1d
 
 # --- Page Config ---
 
@@ -441,14 +442,14 @@ with col2:
         ma_options = [10, 20, 50, 100, 200]
         ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
         ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
-        ma_method = st.selectbox("Pilih Metode MA", ["Simple", "Exponential"])
+        ma_method = st.selectbox("Pilih Metode MA", ["Gaussian Smoothing", "Exponential Smoothing"])
 
-        if ma_method == "Simple":
-            ma1 = data_metric.rolling(ma_period1).mean()
-            ma2 = data_metric.rolling(ma_period2).mean()
-        else:
+        if ma_method == "Exponential Smoothing":
             ma1 = data_metric.ewm(span=ma_period1, adjust=False).mean()
             ma2 = data_metric.ewm(span=ma_period2, adjust=False).mean()
+        elif ma_method == "Gaussian Smoothing":
+            ma1 = gaussian_filter1d(data_metric, sigma=ma_period1)
+            ma2 = gaussian_filter1d(data_metric, sigma=ma_period2)
 
         # --- Reshape ke long format untuk Altair ---
         if single_saham:
@@ -487,7 +488,7 @@ with col2:
         )
 
         # --- Line chart Altair ---
-        st.write(f"### 📊 Perbandingan Harga {metric_choice} Saham")
+        st.write(f"### 📊 Smoothing Saham {metric_choice}")
         base = alt.Chart(df_long).mark_line().encode(
             x=alt.X("Date:T", title="Date"),
             y=alt.Y(
@@ -499,13 +500,13 @@ with col2:
             tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
         )
 
-        line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="orange").encode(
+        line_ma1 = alt.Chart(df_ma1).mark_line(strokeDash=[5, 5], color="#cd4d4d").encode(
             x="Date:T",
             y=f"MA{ma_period1}:Q",
             tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
         )
 
-        line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="blue").encode(
+        line_ma2 = alt.Chart(df_ma2).mark_line(strokeDash=[2, 2], color="#1a69e0").encode(
             x="Date:T",
             y=f"MA{ma_period2}:Q",
             tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
