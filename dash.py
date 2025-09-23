@@ -8,12 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
-from bokeh.plotting import figure, column
-import talib
 import numpy as np
-from bokeh.models import ColumnDataSource, DataRange1d
-from bokeh.layouts import column
-from streamlit_bokeh import streamlit_bokeh
 from scipy.ndimage import gaussian_filter1d
 
 # --- Page Config ---
