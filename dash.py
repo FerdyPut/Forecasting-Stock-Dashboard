@@ -150,7 +150,7 @@ with col2:
                 else:
                     # Jika kolom metric_choice tidak ditemukan
                     st.error(f"⚠️ Metric '{metric_choice}' tidak ditemukan di data.")
-                    return  # Menghentikan eksekusi lebih lanjut jika kolom tidak ditemukan
+                    st.stop()  # Hentikan eksekusi lebih lanjut
 
                 # --- Simpan data asli (untuk tabel/opsi lain) ---
                 data_nonnormal = data_metric.copy()
