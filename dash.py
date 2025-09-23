@@ -136,16 +136,23 @@ with col2:
             with st.container(border=True):
                 metric_choice = st.session_state.metric_choice
 
-                # --- Cek apakah data memiliki MultiIndex ---
+                # --- Cek kolom yang ada di 'data' ---
+                st.write("Data columns:", data.columns)  # Menampilkan kolom yang ada
+
+                # --- Pastikan kolom metric_choice ada di data ---
                 if isinstance(data.columns, pd.MultiIndex):
-                    st.write("Data memiliki MultiIndex")
                     # Jika data punya MultiIndex (misalnya untuk banyak ticker)
-                    if len(tickers) == 1:
-                        data_metric = data[metric_choice].xs(tickers[0], axis=1, level=1).to_frame(name=tickers[0])
+                    if metric_choice in data.columns.get_level_values(0):  # Cek apakah metric_choice ada di level pertama
+                        if len(tickers) == 1:
+                            # Jika hanya satu ticker, kita ambil dengan xs() untuk mengambil kolom yang benar
+                            data_metric = data[metric_choice].xs(tickers[0], axis=1, level=1).to_frame(name=tickers[0])
+                        else:
+                            # Jika lebih dari satu ticker, kita ambil metric_choice
+                            data_metric = data[metric_choice]
                     else:
-                        data_metric = data[metric_choice]
+                        st.error(f"⚠️ Metric '{metric_choice}' tidak ditemukan di level pertama MultiIndex.")
+                        st.stop()
                 else:
-                    st.write("Data tidak memiliki MultiIndex")
                     # Kalau data tidak punya MultiIndex (misalnya hanya satu ticker)
                     if len(tickers) == 1:
                         data_metric = data[metric_choice].to_frame(name=tickers[0])
