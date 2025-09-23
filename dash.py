@@ -123,7 +123,6 @@ with col1:
 
         st.badge(f"📌 Metrik aktif: **{st.session_state.metric_choice}**", color="blue")
 
-# --- Kanan: Grafik & Data ---
 with col2:
     if tickers:
         data = yf.download(tickers, start=start_date, end=end_date)
@@ -137,14 +136,16 @@ with col2:
                 # --- Pilih data sesuai metric ---
                 if len(tickers) == 1:
                     data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+                    single_saham = True
                 else:
                     data_metric = data[metric_choice]
+                    single_saham = False
 
-                # --- Pastikan selalu DataFrame (jika 1 saham) ---
+                # --- Pastikan selalu DataFrame ---
                 if isinstance(data_metric, pd.Series):
                     data_metric = data_metric.to_frame(name=tickers[0])
 
-                # --- Simpan data asli (untuk tabel/opsi lain) ---
+                # --- Simpan data asli ---
                 data_nonnormal = data_metric.copy()
 
                 # --- Normalisasi (kecuali Volume) ---
@@ -152,9 +153,16 @@ with col2:
                     data_metric = data_metric / data_metric.iloc[0]
 
                 # --- Reshape ke long format untuk Altair ---
-                df_long = data_metric.reset_index().melt(
-                    id_vars="Date", var_name="Saham", value_name="Value"
-                )
+                if single_saham:
+                    df_long = pd.DataFrame({
+                        "Date": data_metric.index,
+                        "Saham": tickers[0],
+                        "Value": data_metric[tickers[0]].values
+                    })
+                else:
+                    df_long = data_metric.reset_index().melt(
+                        id_vars="Date", var_name="Saham", value_name="Value"
+                    )
 
                 # --- Hitung quantile untuk default scale ---
                 q_low, q_high = df_long["Value"].quantile([0.05, 0.95])
