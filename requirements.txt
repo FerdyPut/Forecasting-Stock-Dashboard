@@ -6,4 +6,3 @@ pandas
 seaborn
 bokeh==2.4.3
 ta-lib
-numpy==1.23.5
