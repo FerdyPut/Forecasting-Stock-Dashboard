@@ -496,10 +496,4 @@ with col2:
         df = get_stock_data(tickers, metric_choice, start_date, end_date)
 
         # Menampilkan chart
-        chart = create_chart(df, close_line=True, include_vol=True, indicators=indicators)
-        output_notebook()
-        show(chart)
- 
-
-
-
+        st.bokeh_chart(create_chart(df, close_line=True, include_vol=True, indicators=indicators), use_container_width=True)
