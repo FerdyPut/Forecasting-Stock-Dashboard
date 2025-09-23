@@ -145,7 +145,7 @@ with col2:
                     if metric_choice in data.columns.get_level_values(0):  # Cek apakah metric_choice ada di level pertama
                         if len(tickers) == 1:
                             # Jika hanya satu ticker, kita ambil dengan xs() untuk mengambil kolom yang benar
-                            data_metric = data[metric_choice].xs(tickers[0], axis=1, level=1).to_frame(name=tickers[0])
+                            data_metric = data[metric_choice]
                         else:
                             # Jika lebih dari satu ticker, kita ambil metric_choice
                             data_metric = data[metric_choice]
@@ -155,7 +155,7 @@ with col2:
                 else:
                     # Kalau data tidak punya MultiIndex (misalnya hanya satu ticker)
                     if len(tickers) == 1:
-                        data_metric = data[metric_choice].to_frame(name=tickers[0])
+                        data_metric = data[metric_choice]
                     else:
                         data_metric = data[metric_choice]
 
