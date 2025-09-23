@@ -8,9 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
-from bokeh.plotting import figure, show
-from bokeh.io import output_notebook
-from bokeh.layouts import column
+from bokeh.plotting import figure, column
 import talib
 import numpy as np
 
