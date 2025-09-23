@@ -420,7 +420,8 @@ with col2:
         # Fungsi untuk membuat chart
         def create_chart(df, indicators):
             source = ColumnDataSource(df)
-
+            
+            # Candlestick chart setup
             candle = figure(x_axis_type="datetime", height=500, 
                             tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
                                     ("Low", "@Low"), ("Close", "@Close")])
@@ -429,14 +430,23 @@ with col2:
             candle.segment("Date", "Low", "Date", "High", color="black", line_width=0.5, source=source)
             candle.vbar("Date", top="Open", bottom="Close", width=0.5, color="green", source=source, legend_label="Up")
             candle.vbar("Date", top="Close", bottom="Open", width=0.5, color="red", source=source, legend_label="Down")
+            
+            # Apply selected indicators
+            for indicator in indicators:
+                if indicator == "SMA":
+                    sma = talib.SMA(df['Close'].values, timeperiod=14)  # 'Close' column is used for SMA
+                    candle.line(df['Date'], sma, color="orange", line_width=2, source=source, legend_label="SMA")
 
-            # SMA (Simple Moving Average)
-            sma = talib.SMA(df[indicators].values, timeperiod=14)
-            candle.line(df["Date"], sma, color="orange", line_width=2, source=source, legend_label="SMA")
+                # Add more indicator conditions here (e.g., EMA, RSI)
+                elif indicator == "EMA":
+                    ema = talib.EMA(df['Close'].values, timeperiod=14)
+                    candle.line(df['Date'], ema, color="blue", line_width=2, source=source, legend_label="EMA")
 
-        
+            return candle
+
         # Pilih indikator
         indicators = st.multiselect("Pilih Indikator", ["SMA", "EMA", "RSI", "WMA", "MOM", "DEMA", "TEMA"])
 
         # Menampilkan chart
-        st.bokeh_chart(create_chart(data_metric, indicators=indicators), use_container_width=True)
+        if indicators:
+            st.bokeh_chart(create_chart(data_metric, indicators=indicators), use_container_width=True)
