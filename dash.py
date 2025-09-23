@@ -483,7 +483,7 @@ with col2:
             "Atur Range Y-axis",
             float(df_long["Value"].min()),
             float(df_long["Value"].max()),
-            (float(q_low), float(q_high), key="slider2")
+            (float(q_low), float(q_high)), key="slider2"
         )
 
         # --- Line chart Altair ---
