@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
-import plotly.graph_objects as go
-
 
 # --- Page Config ---
 
@@ -415,73 +413,79 @@ with col2:
         """, unsafe_allow_html=True
     )
     with st.container(border=True):
+        metric_choice = st.session_state.metric_choice
+
+        # --- Input pilih periode MA ---
         ma_options = [10, 20, 50, 100, 200]
-        method_options = ["SMA", "EMA", "WMA", "Median"]
+        ma_period1 = st.selectbox("Pilih MA 1", ma_options, index=1, key="ma1")
+        ma_period2 = st.selectbox("Pilih MA 2", ma_options, index=2, key="ma2")
 
-        method_choice = st.selectbox("Pilih Metode Smoothing", method_options, index=1)
-        ma_period1 = st.selectbox("Pilih Periode 1", ma_options, index=1)
-        ma_period2 = st.selectbox("Pilih Periode 2", ma_options, index=2)
+        # --- Pilih data sesuai metric ---
+        if len(tickers) == 1:
+            data_metric = data[[metric_choice]].rename(columns={metric_choice: tickers[0]})
+        else:
+            data_metric = data[metric_choice]
 
-        data_dict = {}
-        for ticker in tickers:
-            df = yf.download(ticker, start=start_date, end=end_date)
-            if df.empty:
-                st.warning(f"Data tidak ditemukan untuk {ticker}")
-            else:
-                data_dict[ticker] = df
+        # --- Simpan data asli ---
+        data_nonnormal = data_metric.copy()
 
-        def apply_smoothing(series, period, method):
-            if method == "SMA":
-                return series.rolling(period).mean()
-            elif method == "EMA":
-                return series.ewm(span=period, adjust=False).mean()
-            elif method == "WMA":
-                weights = list(range(1, period+1))
-                return series.rolling(period).apply(lambda x: (x*weights).sum()/sum(weights), raw=True)
-            elif method == "Median":
-                return series.rolling(period).median()
-            else:
-                return series
+        # --- Normalisasi (kecuali Volume) ---
+        if metric_choice != "Volume":
+            data_metric = data_metric / data_metric.iloc[0]
 
-        fig = go.Figure()
-        colors = ["orange", "blue", "purple", "cyan", "magenta", "yellow"]
+        # --- Moving Average sesuai pilihan ---
+        ma1 = data_metric.rolling(window=ma_period1).mean()
+        ma2 = data_metric.rolling(window=ma_period2).mean()
 
-        for i, ticker in enumerate(tickers):
-            df = data_dict[ticker]
-            
-            # Line chart untuk harga Close
-            fig.add_trace(go.Scatter(
-                x=df.index, y=df['Close'],
-                mode='lines',
-                line=dict(color='green', width=2),
-                name=f"{ticker} Close",
-                hovertemplate=f"{ticker}<br>Date: %{{x|%Y-%m-%d}}<br>Close: %{{y:.2f}}<extra></extra>"
-            ))
-            
-            # Overlay MA/EMA/WMA/Median
-            ma1 = apply_smoothing(df['Close'], ma_period1, method_choice)
-            ma2 = apply_smoothing(df['Close'], ma_period2, method_choice)
-            
-            fig.add_trace(go.Scatter(
-                x=df.index, y=ma1, line=dict(color=colors[i % len(colors)], width=2, dash='dash'),
-                name=f"{ticker} {method_choice}{ma_period1}"
-            ))
-            fig.add_trace(go.Scatter(
-                x=df.index, y=ma2, line=dict(color=colors[i % len(colors)], width=2, dash='dot'),
-                name=f"{ticker} {method_choice}{ma_period2}"
-            ))
+        # --- Reshape data ---
+        df_long = data_metric.reset_index().melt(
+            id_vars="Date", var_name="Saham", value_name="Value"
+        )
+        df_ma1 = ma1.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period1}")
+        df_ma2 = ma2.reset_index().melt(id_vars="Date", var_name="Saham", value_name=f"MA{ma_period2}")
 
-        fig.update_layout(
-            title=f"📊 Multi-Saham Line Chart + {method_choice} ({ma_period1}, {ma_period2})",
-            xaxis_title="Date",
-            yaxis_title="Price",
-            xaxis_rangeslider_visible=True,  # slider tanggal
-            template="plotly_dark",
-            height=600
+        # --- Base Chart (Harga) ---
+        base = alt.Chart(df_long).mark_line().encode(
+            x="Date:T",
+            y=alt.Y("Value:Q", title=("Normalized " if metric_choice != "Volume" else "") + metric_choice),
+            color="Saham:N",
+            tooltip=["Saham", "Date:T", alt.Tooltip("Value:Q", format=",.2f")]
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        # --- Garis MA1 ---
+        line_ma1 = alt.Chart(df_ma1).mark_line(
+            strokeDash=[5, 5], color="orange"
+        ).encode(
+            x="Date:T",
+            y=f"MA{ma_period1}:Q",
+            tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period1}:Q", format=",.2f")]
+        )
 
+        # --- Garis MA2 ---
+        line_ma2 = alt.Chart(df_ma2).mark_line(
+            strokeDash=[2, 2], color="blue"
+        ).encode(
+            x="Date:T",
+            y=f"MA{ma_period2}:Q",
+            tooltip=["Saham", "Date:T", alt.Tooltip(f"MA{ma_period2}:Q", format=",.2f")]
+        )
+
+        # --- Combine ---
+        final_chart = (base + line_ma1 + line_ma2).properties(
+            title=f"📊 Harga {metric_choice} + MA ({ma_period1} & {ma_period2} Hari)",
+            height=400
+        ).configure_axis(
+            labelFont="Poppins",
+            titleFont="Poppins"
+        ).configure_title(
+            font="Poppins",
+            fontSize=16
+        ).configure_legend(
+            labelFont="Poppins",
+            titleFont="Poppins"
+        )
+
+        st.altair_chart(final_chart, use_container_width=True)
 
 
 
