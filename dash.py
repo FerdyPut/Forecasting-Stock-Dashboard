@@ -442,7 +442,6 @@ with col2:
 
             # Candlestick Chart
             candle = figure(x_axis_type="datetime", height=500, 
-                            x_range=DataRange1d(start=df.Date.min(), end=df.Date.max()), 
                             tooltips=[("Date", "@Date_str"), ("Open", "@Open"), ("High", "@High"), 
                                     ("Low", "@Low"), ("Close", "@Close")])
             
