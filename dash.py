@@ -522,6 +522,7 @@ with col2:
 with col1:
     with st.container(border=True):
         daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
+
         # --- Ambil Market Cap ---
         market_caps = {}
         for t in tickers:
@@ -535,17 +536,14 @@ with col1:
             "Market Cap": [market_caps[t] for t in tickers]
         })
 
-        # --- Heatmap Altair ---
-        heatmap = (
-            alt.Chart(df_heat)
-            .mark_rect()
-            .encode(
-                x=alt.X("Saham:N", title="Ticker"),
-                y=alt.Y("Market Cap:Q", title="Market Cap", scale=alt.Scale(type="log")),  # pakai log scale
-                color=alt.Color("Daily Return (%):Q", scale=alt.Scale(scheme="redblue"), legend=alt.Legend(title="Return %")),
-                tooltip=["Saham", "Daily Return (%)", "Market Cap"]
-            )
-            .properties(width=500, height=300)
+        # --- Treemap Plotly ---
+        fig = px.treemap(
+            df_heat,
+            path=["Saham"],
+            values="Market Cap",
+            color="Daily Return (%)",
+            color_continuous_scale="RdYlGn",
+            title="Heatmap Saham: Market Cap vs Daily Return"
         )
 
-        st.altair_chart(heatmap, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
