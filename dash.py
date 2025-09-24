@@ -521,6 +521,12 @@ with col2:
 
 with col1:
     with st.container(border=True):
+            # --- Input: pilih skema warna ---
+        color_map = st.selectbox(
+            "Pilih Skema Warna",
+            ["RdYlGn", "Viridis", "Bluered", "Plasma", "Cividis"],
+            index=0
+        )
         daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
 
         # --- Ambil Market Cap ---
@@ -542,7 +548,7 @@ with col1:
             path=["Saham"],
             values="Market Cap",
             color="Daily Return (%)",
-            color_continuous_scale="RdYlGn",
+            color_continuous_scale=color_map,
             title="Heatmap Saham: Market Cap vs Daily Return"
         )
 
@@ -550,7 +556,7 @@ with col1:
         fig.update_layout(
             coloraxis_colorbar=dict(
                 orientation="h",
-                y=1.05,  # posisi vertical (1.0 = pas atas plot)
+                y=1.05,
                 x=0.5,
                 xanchor="center",
                 title="Daily Return (%)"
