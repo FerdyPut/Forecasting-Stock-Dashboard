@@ -518,3 +518,34 @@ with col2:
         )
 
         st.altair_chart(final_chart, use_container_width=True)
+
+with col1:
+    with st.container(border=True):
+        daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
+        # --- Ambil Market Cap ---
+        market_caps = {}
+        for t in tickers:
+            info = yf.Ticker(t).info
+            market_caps[t] = info.get("marketCap", None)
+
+        # --- Buat DataFrame ringkasan ---
+        df_heat = pd.DataFrame({
+            "Saham": tickers,
+            "Daily Return (%)": [daily_return[t] for t in tickers],
+            "Market Cap": [market_caps[t] for t in tickers]
+        })
+
+        # --- Heatmap Altair ---
+        heatmap = (
+            alt.Chart(df_heat)
+            .mark_rect()
+            .encode(
+                x=alt.X("Saham:N", title="Ticker"),
+                y=alt.Y("Market Cap:Q", title="Market Cap", scale=alt.Scale(type="log")),  # pakai log scale
+                color=alt.Color("Daily Return (%):Q", scale=alt.Scale(scheme="redblue"), legend=alt.Legend(title="Return %")),
+                tooltip=["Saham", "Daily Return (%)", "Market Cap"]
+            )
+            .properties(width=500, height=300)
+        )
+
+        st.altair_chart(heatmap, use_container_width=True)
