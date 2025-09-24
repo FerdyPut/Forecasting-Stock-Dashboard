@@ -522,6 +522,7 @@ with col2:
 with col1:
     with st.container(border=True):
             # --- Input: pilih skema warna ---
+        st.write(f"### 🌐 Heatmap Saham: Market Cap vs Daily Return")
         color_map = st.selectbox(
             "Pilih Skema Warna",
             ["RdYlGn", "Viridis", "Bluered", "Plasma", "Cividis"],
@@ -548,8 +549,7 @@ with col1:
             path=["Saham"],
             values="Market Cap",
             color="Daily Return (%)",
-            color_continuous_scale=color_map,
-            title="Heatmap Saham: Market Cap vs Daily Return"
+            color_continuous_scale=color_map
         )
 
         # Geser colorbar ke atas
