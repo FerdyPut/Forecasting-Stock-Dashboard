@@ -525,7 +525,7 @@ with col1:
         color_map = st.selectbox(
             "Pilih Skema Warna",
             ["RdYlGn", "Viridis", "Bluered", "Plasma", "Cividis"],
-            index=0
+            index=3
         )
         daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
 
