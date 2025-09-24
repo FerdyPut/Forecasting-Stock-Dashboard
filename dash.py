@@ -522,13 +522,14 @@ with col2:
 with col1:
     with st.container(border=True):
             # --- Input: pilih skema warna ---
-        st.write(f"### 🌐 Heatmap Saham: Market Cap vs Daily Return")
+        st.write(f"### 🌐Heatmap Saham: Market Cap vs Daily Return")
         color_map = st.selectbox(
             "Pilih Skema Warna",
             ["RdYlGn", "Viridis", "Bluered", "Plasma", "Cividis"],
             index=3
         )
-        daily_return = data.pct_change().iloc[-1].mul(100).round(2)
+        daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
+        daily_return = daily_return.round(2)
 
         # --- Ambil Market Cap ---
         market_caps = {}
