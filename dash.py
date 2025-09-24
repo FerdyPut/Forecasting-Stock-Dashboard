@@ -546,4 +546,15 @@ with col1:
             title="Heatmap Saham: Market Cap vs Daily Return"
         )
 
+        # Geser colorbar ke atas
+        fig.update_layout(
+            coloraxis_colorbar=dict(
+                orientation="h",
+                y=1.05,  # posisi vertical (1.0 = pas atas plot)
+                x=0.5,
+                xanchor="center",
+                title="Daily Return (%)"
+            )
+        )
+
         st.plotly_chart(fig, use_container_width=True)
