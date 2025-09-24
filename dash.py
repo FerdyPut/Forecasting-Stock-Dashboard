@@ -528,7 +528,7 @@ with col1:
             ["RdYlGn", "Viridis", "Bluered", "Plasma", "Cividis"],
             index=3
         )
-        daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
+        daily_return = data.pct_change().iloc[-1].mul(100).round(2)
 
         # --- Ambil Market Cap ---
         market_caps = {}
