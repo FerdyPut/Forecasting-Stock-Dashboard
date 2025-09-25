@@ -9,7 +9,10 @@ import seaborn as sns
 import plotly.express as px
 import altair as alt
 import numpy as np
-from scipy.ndimage import gaussian_filter1d
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import math
 
 # --- Page Config ---
 
@@ -565,3 +568,69 @@ with col1:
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+with col2:
+    with st.container(border=True):
+        st.subheader("📈 Forecasting")
+
+        # --- Pilih metric yang mau di-forecasting ---
+        metric_choice = st.session_state.metric_choice
+        st.write(f"📊 Metric yang dipakai untuk forecasting: **{metric_choice}**")
+
+        # --- Ambil time series dari metric pilihan ---
+        ts = data[metric_choice].dropna()
+
+        # --- Split data train & test ---
+        train_size = int(len(ts) * 0.8)
+        train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+
+        st.write(f"Dataset dibagi menjadi **Train {len(train)}** dan **Test {len(test)}** data poin.")
+
+        # --- Pilihan metode forecasting ---
+        methods = ["ARIMA", "Holt-Winters (ETS)"]
+        method = st.selectbox("Pilih Metode Forecasting", methods)
+
+        # --- Forecast horizon ---
+        horizon = st.slider("Pilih horizon forecast (hari)", 5, 60, 14)
+
+        forecast = None
+        if method == "ARIMA":
+            try:
+                model = ARIMA(train, order=(5,1,0))
+                model_fit = model.fit()
+                forecast = model_fit.forecast(steps=len(test)+horizon)
+            except Exception as e:
+                st.error(f"⚠️ ARIMA error: {e}")
+
+        elif method == "Holt-Winters (ETS)":
+            try:
+                model = ExponentialSmoothing(train, trend="add", seasonal=None)
+                model_fit = model.fit()
+                forecast = model_fit.forecast(len(test)+horizon)
+            except Exception as e:
+                st.error(f"⚠️ Holt-Winters error: {e}")
+
+        # --- Plot hasil forecast ---
+        if forecast is not None:
+            fig, ax = plt.subplots(figsize=(12,5))
+            ax.plot(train.index, train, label="Train")
+            ax.plot(test.index, test, label="Test", color="orange")
+            ax.plot(forecast.index, forecast, label="Forecast", color="red")
+            ax.set_title(f"Forecasting {metric_choice} dengan {method}")
+            ax.legend()
+            st.pyplot(fig)
+
+            # --- Hitung error di test set ---
+            y_true = test
+            y_pred = forecast.iloc[:len(test)]
+            rmse = math.sqrt(mean_squared_error(y_true, y_pred))
+            mae = mean_absolute_error(y_true, y_pred)
+
+            st.write("### 📊 Evaluasi Model")
+            st.write(f"- RMSE: **{rmse:.2f}**")
+            st.write(f"- MAE: **{mae:.2f}**")
+
+            # --- Future forecast ---
+            future_forecast = forecast.iloc[len(test):]
+            st.write(f"### 🔮 Forecast {horizon} hari ke depan")
+            st.line_chart(future_forecast)
