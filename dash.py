@@ -9,10 +9,15 @@ import seaborn as sns
 import plotly.express as px
 import altair as alt
 import numpy as np
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import math
+from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from prophet import Prophet
 
 # --- Page Config ---
 
@@ -571,66 +576,87 @@ with col1:
 
 with col2:
     with st.container(border=True):
-        st.subheader("📈 Forecasting")
+        st.subheader("🔍 EDA & Forecasting Saham")
 
-        # --- Pilih metric yang mau di-forecasting ---
+        # --- Pilih metric & saham ---
         metric_choice = st.session_state.metric_choice
-        st.write(f"📊 Metric yang dipakai untuk forecasting: **{metric_choice}**")
+        forecast_saham = st.selectbox("Pilih Saham untuk Forecasting", tickers)
+        ts = data[metric_choice][forecast_saham].dropna()
 
-        # --- Ambil time series dari metric pilihan ---
-        ts = data[metric_choice].dropna()
+        st.line_chart(ts, height=300)
 
-        # --- Split data train & test ---
-        train_size = int(len(ts) * 0.8)
-        train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+        # --- Seasonal Decomposition ---
 
-        st.write(f"Dataset dibagi menjadi **Train {len(train)}** dan **Test {len(test)}** data poin.")
+        try:
+            decomposition = seasonal_decompose(ts, period=30)  # asumsinya monthly seasonality
+            st.write("### 📉 Seasonal Decomposition")
+            st.pyplot(decomposition.plot())
+        except Exception as e:
+            st.warning(f"Decomposition error: {e}")
 
-        # --- Pilihan metode forecasting ---
-        methods = ["ARIMA", "Holt-Winters (ETS)"]
-        method = st.selectbox("Pilih Metode Forecasting", methods)
+        # --- ADF Test (cek stasioneritas) ---
+        
+        adf_result = adfuller(ts)
+        st.write("### 🧪 ADF Test")
+        st.write(f"ADF Statistic: {adf_result[0]:.4f}")
+        st.write(f"p-value: {adf_result[1]:.4f}")
+        if adf_result[1] > 0.05:
+            st.warning("⚠️ Data tidak stasioner (p > 0.05). Disarankan transformasi/differencing.")
+            ts_transformed = ts.diff().dropna()
+        else:
+            st.success("✅ Data sudah stasioner")
+            ts_transformed = ts
 
-        # --- Forecast horizon ---
-        horizon = st.slider("Pilih horizon forecast (hari)", 5, 60, 14)
+        # --- ACF & PACF Plot ---
 
-        forecast = None
-        if method == "ARIMA":
-            try:
-                model = ARIMA(train, order=(5,1,0))
-                model_fit = model.fit()
-                forecast = model_fit.forecast(steps=len(test)+horizon)
-            except Exception as e:
-                st.error(f"⚠️ ARIMA error: {e}")
 
-        elif method == "Holt-Winters (ETS)":
-            try:
-                model = ExponentialSmoothing(train, trend="add", seasonal=None)
-                model_fit = model.fit()
-                forecast = model_fit.forecast(len(test)+horizon)
-            except Exception as e:
-                st.error(f"⚠️ Holt-Winters error: {e}")
+        fig, ax = plt.subplots(1, 2, figsize=(12,4))
+        plot_acf(ts_transformed, ax=ax[0], lags=20)
+        plot_pacf(ts_transformed, ax=ax[1], lags=20)
+        st.pyplot(fig)
 
-        # --- Plot hasil forecast ---
-        if forecast is not None:
-            fig, ax = plt.subplots(figsize=(12,5))
-            ax.plot(train.index, train, label="Train")
-            ax.plot(test.index, test, label="Test", color="orange")
-            ax.plot(forecast.index, forecast, label="Forecast", color="red")
-            ax.set_title(f"Forecasting {metric_choice} dengan {method}")
-            ax.legend()
-            st.pyplot(fig)
+        # --- Train-test split ---
+        train_size = int(len(ts_transformed) * 0.8)
+        train, test = ts_transformed[:train_size], ts_transformed[train_size:]
 
-            # --- Hitung error di test set ---
-            y_true = test
-            y_pred = forecast.iloc[:len(test)]
-            rmse = math.sqrt(mean_squared_error(y_true, y_pred))
-            mae = mean_absolute_error(y_true, y_pred)
+        # --- ARIMA Forecast ---
+        
+        try:
+            arima_model = ARIMA(train, order=(1,1,1))
+            arima_fit = arima_model.fit()
+            forecast_arima = arima_fit.forecast(steps=len(test))
 
-            st.write("### 📊 Evaluasi Model")
-            st.write(f"- RMSE: **{rmse:.2f}**")
-            st.write(f"- MAE: **{mae:.2f}**")
+            st.write("### 📈 ARIMA Forecast")
+            st.line_chart(pd.DataFrame({"Actual": test, "Forecast": forecast_arima}, index=test.index))
+        except Exception as e:
+            st.error(f"ARIMA error: {e}")
 
-            # --- Future forecast ---
-            future_forecast = forecast.iloc[len(test):]
-            st.write(f"### 🔮 Forecast {horizon} hari ke depan")
-            st.line_chart(future_forecast)
+        # --- Holt-Winters Forecast ---
+
+        try:
+            hw_model = ExponentialSmoothing(train, trend="add", seasonal=None)
+            hw_fit = hw_model.fit()
+            forecast_hw = hw_fit.forecast(len(test))
+
+            st.write("### 📉 Holt-Winters Forecast")
+            st.line_chart(pd.DataFrame({"Actual": test, "Forecast": forecast_hw}, index=test.index))
+        except Exception as e:
+            st.error(f"Holt-Winters error: {e}")
+
+        # --- Prophet Forecast ---
+        try:
+            prophet_df = ts.reset_index()[["Date", forecast_saham]].rename(columns={"Date":"ds", forecast_saham:"y"})
+            prophet_train = prophet_df.iloc[:train_size]
+            prophet_test = prophet_df.iloc[train_size:]
+
+            prophet_model = Prophet(daily_seasonality=True)
+            prophet_model.fit(prophet_train)
+
+            future = prophet_model.make_future_dataframe(periods=len(prophet_test))
+            forecast = prophet_model.predict(future)
+
+            st.write("### 🔮 Prophet Forecast")
+            fig1 = prophet_model.plot(forecast)
+            st.pyplot(fig1)
+        except Exception as e:
+            st.error(f"Prophet error: {e}")
