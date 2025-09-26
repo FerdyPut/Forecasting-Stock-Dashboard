@@ -756,14 +756,13 @@ with col2:
             st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
 
 with col1:
+    with st.container(border=True):
         st.subheader("🤖 Insight AI")
     
         st.info(
             f"Nilai MAPE metode {method_choice}: {mape:.2f}% → "
             f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {saham_choice}."
         )
-
-        st.subheader("🤖 Chatbot Insight")
 
         # simpan riwayat percakapan
         if "messages" not in st.session_state:
