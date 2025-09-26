@@ -631,7 +631,7 @@ with col2:
         
         
         st.badge(f"Asumsi Lengkap untuk metode ARIMA! (Stasioner, Normal, dan Autokorelasi)")
-        st.markdown("Ketika, salah satu asumsi tidak terpenuhi, maka sudah distransformasi!")
+        st.markdown("Ketika, salah satu asumsi tidak terpenuhi, maka sudah distransformasi!. Diharapkan, lebih bagus menggunakan metode SVR mengantisipasi cek Asumsi")
 
         ts = data[metric_choice][saham_choice].dropna()
 
