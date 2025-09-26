@@ -32,11 +32,11 @@ st.markdown(
                 f"""
                 <style>
                 .hover-box {{
-                    border: 1px solid #5b4699;
+                    border: 1px solid #FAB12F;
                     border-radius: 10px;
                     padding: 5px;
                     text-align: center;
-                    background-color: #5b4699;
+                    background-color: #FAB12F;
                     color: white;
                     transition: 0.3s;
                     position: relative;
@@ -45,7 +45,7 @@ st.markdown(
                     font-family: 'Poppins', sans-serif;
                 }}
                 .hover-box:hover {{
-                    background-color: #5b4699;
+                    background-color: #FAB12F;
                     transform: scale(1.01);
                 }}
                 .download-btn {{
