@@ -20,6 +20,8 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing, SimpleExpSmoothing
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
+from statsmodels.stats.diagnostic import acorr_ljungbox
+from scipy.stats import shapiro, jarque_bera
 
 # --- Page Config ---
 
@@ -592,22 +594,52 @@ with col2:
         train_size = int(len(ts) * 0.8)
         train, test = ts.iloc[:train_size], ts.iloc[train_size:]
 
-        # --- Cek stasioneritas ---
+        # =====================================================
+        # 1. CEK ASUMSI STASIONERITAS (ADF Test)
+        # =====================================================
         adf_result = adfuller(train)
         p_value = adf_result[1]
-        if adf_result[1] > 0.05:
-            ts_diff = ts.diff().dropna()
-            train, test = ts_diff.iloc[:train_size], ts_diff.iloc[train_size:]
-            st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}). "
-                       "Menggunakan differencing (Δ) agar stasioner.")
+
+        if p_value > 0.05:
+            ts = ts.diff().dropna()
+            train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+            st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
         else:
-            ts_diff = ts
-            st.success(f"✅ Data stasioner (p-value = {p_value:.4f}), tidak perlu differencing.")
+            st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
 
+        # =====================================================
+        # 2. Cek ASUMSI RESIDUAL (WHITE NOISE, NORMALITAS)
+        # =====================================================
+        # Sementara kita cek untuk ARIMA saja
+        if method_choice == "ARIMA":
+            try:
+                model_arima = ARIMA(train, order=(1, 1, 1))
+                model_fit = model_arima.fit()
 
-        # =======================
-        # Forecasting sesuai pilihan
-        # =======================
+                resid = model_fit.resid
+
+                # --- Ljung-Box test (cek autokorelasi residual) ---
+                lb_test = acorr_ljungbox(resid, lags=[10], return_df=True)
+                lb_pval = lb_test["lb_pvalue"].iloc[0]
+
+                if lb_pval > 0.05:
+                    st.success(f"✅ Residual memenuhi asumsi white noise (Ljung-Box p = {lb_pval:.4f})")
+                else:
+                    st.warning(f"⚠️ Residual masih ada autokorelasi (Ljung-Box p = {lb_pval:.4f})")
+
+                # --- Normalitas residual ---
+                jb_stat, jb_pval = jarque_bera(resid)
+                if jb_pval > 0.05:
+                    st.success(f"✅ Residual berdistribusi normal (JB p = {jb_pval:.4f})")
+                else:
+                    st.warning(f"⚠️ Residual tidak normal (JB p = {jb_pval:.4f})")
+
+            except Exception as e:
+                st.error(f"Gagal fitting ARIMA untuk uji asumsi: {e}")
+
+        # =====================================================
+        # 3. Forecasting sesuai pilihan
+        # =====================================================
         forecast = None
         try:
             if method_choice == "ARIMA":
@@ -637,23 +669,14 @@ with col2:
         except Exception as e:
             st.error(f"{method_choice} error: {e}")
 
-        # =======================
-        # Visualisasi interaktif
-        # =======================
+        # =====================================================
+        # 4. Visualisasi + RMSE
+        # =====================================================
         if forecast is not None:
-            # Gabungkan actual dan forecast
-            df_plot = pd.DataFrame({
-                "Date": ts.index,
-                "Actual": ts.values
-            })
-            df_forecast = pd.DataFrame({
-                "Date": test.index,
-                "Forecast": forecast
-            })
-
+            df_plot = pd.DataFrame({"Date": ts.index, "Actual": ts.values})
+            df_forecast = pd.DataFrame({"Date": test.index, "Forecast": forecast})
             df_all = pd.merge(df_plot, df_forecast, on="Date", how="outer")
 
-            # Reshape ke long format
             df_long = df_all.melt("Date", var_name="Type", value_name="Value")
 
             line_chart = alt.Chart(df_long).mark_line().encode(
@@ -669,7 +692,6 @@ with col2:
             )
 
             st.altair_chart(line_chart, use_container_width=True)
-
 
             # --- RMSE ---
             rmse = np.sqrt(mean_squared_error(test, forecast))
