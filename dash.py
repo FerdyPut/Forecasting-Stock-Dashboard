@@ -622,21 +622,18 @@ with tab1:
             """, unsafe_allow_html=True
         )
             with st.container(border=True):
+                try:
+                    sahamm = [ticker + ".JK" for ticker in tickers_list]
+                    # --- Pilih saham & metric ---
+                    saham_choice = st.selectbox("Pilih Saham untuk Forecasting", sahamm)
+                    metric_choice = st.session_state.metric_choice
+                    method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
+                    
+                    
+                    st.badge(f"Asumsi Lengkap untuk metode ARIMA! (Stasioner, Normal, dan Autokorelasi)")
+                    st.markdown("Ketika, salah satu asumsi tidak terpenuhi, maka sudah ditransformasi!. Diharapkan, lebih bagus menggunakan metode SVR mengantisipasi cek Asumsi")
 
-                sahamm = [ticker + ".JK" for ticker in tickers_list]
-                # --- Pilih saham & metric ---
-                saham_choice = st.selectbox("Pilih Saham untuk Forecasting", sahamm)
-                metric_choice = st.session_state.metric_choice
-                method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
-                
-                
-                st.badge(f"Asumsi Lengkap untuk metode ARIMA! (Stasioner, Normal, dan Autokorelasi)")
-                st.markdown("Ketika, salah satu asumsi tidak terpenuhi, maka sudah ditransformasi!. Diharapkan, lebih bagus menggunakan metode SVR mengantisipasi cek Asumsi")
-
-                ts = data[metric_choice][saham_choice].dropna()
-                if ts.empty:
-                   st.error("⚠️ Error: Data tidak tersedia. Silakan ganti time horizon atau pilih saham lainnya.")
-                else:
+                    ts = data[metric_choice][saham_choice].dropna()
                 
                     # --- Train-test split ---
                     train_size = int(len(ts) * 0.8)
@@ -757,7 +754,8 @@ with tab1:
                         mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
                         st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
                         st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
-
+                except:
+                    st.error(f"⚠️ Error: {str(e)}. Silakan ganti time horizon yang lebih panjang lagi atau jika masih error, maka pilih saham lainnya.")
         with col1:
             with st.container(border=True):
                 st.subheader("🤖 TRENDS ADVISOR WITH AI")
