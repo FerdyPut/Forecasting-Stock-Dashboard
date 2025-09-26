@@ -719,7 +719,7 @@ with col2:
             st.error(f"{method_choice} error: {e}")
 
         # =====================================================
-        # 4. Visualisasi + RMSE
+        # 4. Visualisasi + MAPE
         # =====================================================
         if forecast is not None:
             df_plot = pd.DataFrame({"Date": ts.index, "Actual": ts.values})
@@ -742,7 +742,7 @@ with col2:
 
             st.altair_chart(line_chart, use_container_width=True)
 
-            # --- RMSE ---
-            rmse = np.sqrt(mean_squared_error(test, forecast))
-            st.success(f"Nilai RMSE metode {method_choice}: {rmse:.2f}")
-            st.caption(f"✅ RMSE (Pengukuran yang menunjukkan semakin kecil nilai RMSE semakin baik dalam memprediksi)")
+            # --- MAPE ---
+            mape = np.mean(np.abs((test - forecast) / test)) * 100
+            st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
+            st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
