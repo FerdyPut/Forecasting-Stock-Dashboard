@@ -780,13 +780,14 @@ with tab1:
                         st.session_state.messages.append({"role": "user", "content": prompt})
                         with st.chat_message("user"):
                             st.write(prompt)
+                        user_input = prompt.lower()
 
                         # respon chatbot
-                        if "menurun" or "turun" in prompt.lower():
+                        if "menurun" or "turun" in user_input:
                             reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
-                        elif "naik" or "menaik" in prompt.lower():
+                        elif "naik" or "menaik" in user_input:
                             reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
-                        elif "stagnan" or "lurus" or "tetap" in prompt.lower():
+                        elif "stagnan" or "lurus" or "tetap" in user_input:
                             reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
                         else:
                             reply = "🤔 Saya hanya bisa menjawab tren: menurun, naik, atau stagnan."
