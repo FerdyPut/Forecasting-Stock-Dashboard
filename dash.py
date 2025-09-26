@@ -628,7 +628,7 @@ with tab1:
                     sahamm = [ticker + ".JK" for ticker in tickers_list2]
                     # --- Pilih saham & metric ---
                     saham_choice = st.selectbox("Pilih Saham untuk Forecasting", sahamm)
-                    metric_choice = st.session_state.metric_choice
+                    metric_choice = st.selectbox("Close", "Open", "High", "Low", "Volume")
                     method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
                     
                     
