@@ -783,11 +783,11 @@ with tab1:
                         user_input = prompt.lower()
 
                         # respon chatbot
-                        if "menurun" or "turun" in user_input:
+                        if "menurun" in user_input or "turun" in user_input:
                             reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
-                        elif "naik" or "menaik" in user_input:
+                        elif "naik" in user_input or "menaik" in user_input:
                             reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
-                        elif "stagnan" or "lurus" or "tetap" in user_input:
+                        elif "stagnan" in user_input or "lurus" in user_input or "tetap" in user_input:
                             reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
                         else:
                             reply = "🤔 Saya hanya bisa menjawab tren: menurun, naik, atau stagnan."
