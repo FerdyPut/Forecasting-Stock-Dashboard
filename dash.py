@@ -636,7 +636,8 @@ with tab1:
                 ts = data[metric_choice][saham_choice].dropna()
                 if ts.empty:
                    st.error("⚠️ Error: Data tidak tersedia. Silakan ganti time horizon atau pilih saham lainnya.")
-
+                else:
+                    ts
                 # --- Train-test split ---
                 train_size = int(len(ts) * 0.8)
                 train, test = ts.iloc[:train_size], ts.iloc[train_size:]
