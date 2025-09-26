@@ -769,9 +769,9 @@ with col1:
             #st.session_state.messages = []
 
         # tampilkan riwayat
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"]):
-                st.write(msg["content"])
+        #for msg in st.session_state.messages:
+            #with st.chat_message(msg["role"]):
+                #st.write(msg["content"])
 
         # input user
         if prompt := st.chat_input("Tanyakan arah tren (contoh: menurun, naik, stagnan)..."):
