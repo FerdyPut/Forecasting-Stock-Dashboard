@@ -754,7 +754,7 @@ with tab1:
                         mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
                         st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
                         st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
-                except:
+                except Exception as e:
                     st.error(f"⚠️ Error: {str(e)}. Silakan ganti time horizon yang lebih panjang lagi atau jika masih error, maka pilih saham lainnya.")
         with col1:
             with st.container(border=True):
