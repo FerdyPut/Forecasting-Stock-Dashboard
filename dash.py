@@ -42,7 +42,8 @@ st.markdown(
                     position: relative;
                     margin-top: 1px;
                     font-size: 18px;
-                    font-family: 'Salvatore';
+                    font-family: 'Salvatore Book';
+                            src: url('Salvatore-Book.ttf') format('truetype');
                 }}
                 .hover-box1:hover {{
                     background-color: #FAB12F;
