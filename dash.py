@@ -757,45 +757,42 @@ with tab1:
                     st.error(f"⚠️ Error: {str(e)}. Silakan ganti time horizon yang lebih panjang lagi atau jika masih error, maka pilih saham lainnya.")
         with col1:
             with st.container(border=True):
-                try:
-                    st.subheader("🤖 TRENDS ADVISOR WITH AI")
-                
-                    st.info(
-                        f"Nilai MAPE metode {method_choice}: {mape:.2f}% → "
-                        f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {saham_choice}."
-                    )
+                st.subheader("🤖 TRENDS ADVISOR WITH AI")
+            
+                st.info(
+                    f"Nilai MAPE metode {method_choice}: {mape:.2f}% → "
+                    f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {saham_choice}."
+                )
 
-                    # simpan riwayat percakapan
-                    #if "messages" not in st.session_state:
-                        #st.session_state.messages = []
+                # simpan riwayat percakapan
+                #if "messages" not in st.session_state:
+                    #st.session_state.messages = []
 
-                    # tampilkan riwayat
-                    #for msg in st.session_state.messages:
-                        #with st.chat_message(msg["role"]):
-                            #st.write(msg["content"])
+                # tampilkan riwayat
+                #for msg in st.session_state.messages:
+                    #with st.chat_message(msg["role"]):
+                        #st.write(msg["content"])
 
-                    # input user
-                    if prompt := st.chat_input("Tanyakan arah tren (ex: menurun, naik, stagnan)..."):
-                        # tampilkan pesan user
-                        st.session_state.messages.append({"role": "user", "content": prompt})
-                        with st.chat_message("user"):
-                            st.write(prompt)
+                # input user
+                if prompt := st.chat_input("Tanyakan arah tren (ex: menurun, naik, stagnan)..."):
+                    # tampilkan pesan user
+                    st.session_state.messages.append({"role": "user", "content": prompt})
+                    with st.chat_message("user"):
+                        st.write(prompt)
 
-                        # respon chatbot
-                        if "menurun" or "turun" in prompt.lower():
-                            reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
-                        elif "naik" or "menaik" in prompt.lower() or "menaik" in prompt.lower():
-                            reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
-                        elif "stagnan" or "lurus" or "tetap" in prompt.lower() or "lurus" in prompt.lower():
-                            reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
-                        else:
-                            reply = "🤔 Saya hanya bisa menjawab tren: menurun, naik, atau stagnan."
+                    # respon chatbot
+                    if "menurun" or "turun" in prompt.lower():
+                        reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
+                    elif "naik" or "menaik" in prompt.lower() or "menaik" in prompt.lower():
+                        reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
+                    elif "stagnan" or "lurus" or "tetap" in prompt.lower() or "lurus" in prompt.lower():
+                        reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
+                    else:
+                        reply = "🤔 Saya hanya bisa menjawab tren: menurun, naik, atau stagnan."
 
-                        st.session_state.messages.append({"role": "assistant", "content": reply})
-                        with st.chat_message("assistant"):
-                            st.write(reply)
-                except:
-                    st.error("Terdapat Error pada Fiture Forecasting! Silahkan Cermati Errornya!")
+                    st.session_state.messages.append({"role": "assistant", "content": reply})
+                    with st.chat_message("assistant"):
+                        st.write(reply)
 
 with tab2:
     st.markdown(
