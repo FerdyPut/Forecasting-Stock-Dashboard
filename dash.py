@@ -30,6 +30,10 @@ st.title("🔮 STOCK INTELLIGENCE HUB")
 st.badge("Selamat datang di STOCK INTELLIGENCE HUB 🚀", color="violet")
 st.warning("Dashboard ini dibuat supaya stakeholders bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell.")
 
+# --- Ambil data saham dari Dropbox ---
+url = "https://www.dropbox.com/scl/fi/c00v1ghuj6k06uirtdql4/Daftar-Saham-20250926.xlsx?rlkey=w2az4wpj6ti88yn2tmscdl6z5&st=alpxhyqt&dl=1"
+df_saham = pd.read_excel(url)
+
 
 tab1, tab2 = st.tabs(["Forecast", "List Saham"])
 
@@ -41,30 +45,15 @@ with tab1:
         with col1:
             with st.container(border=True): # Streamlit tidak mendukung border=True secara default
                 # --- Pilih ticker ---
-                tickers_list = [
-                    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-                    "BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK",
-                    "ICBP.JK", "INDF.JK", "SMGR.JK", "KLBF.JK", "BBNI.JK", "BRIS.JK",
-                    "ADRO.JK", "ANTM.JK", "MEDC.JK", "PGAS.JK", "EXCL.JK", "JSMR.JK",
-                    "TBIG.JK", "SIDO.JK", "WIKA.JK", "WSKT.JK", "MYOR.JK", "MNCN.JK",
-                    "PWON.JK", "AKRA.JK", "UNTR.JK", "SMRA.JK", "TINS.JK", "BSDE.JK",
-                    "CPIN.JK", "HMSP.JK", "MAPA.JK", "MAPI.JK", "INCO.JK", "ADHI.JK",
-                    "INKP.JK", "TBLA.JK", "BUMI.JK", "ERAA.JK", "BTPS.JK", "BBTN.JK",
-                    "BBKP.JK", "PNBN.JK", "BNGA.JK", "NISP.JK", "BMTR.JK", "SCMA.JK",
-                    "TOTL.JK", "WTON.JK", "LPKR.JK", "LPCK.JK", "MLPL.JK", "IMAS.JK",
-                    "GGRM.JK", "DVLA.JK", "CMPP.JK", "KAEF.JK", "KRAS.JK", "PANI.JK",
-                    "TOWR.JK", "MTDL.JK", "ELSA.JK", "INDY.JK", "RAJA.JK", "SGRO.JK",
-                    "AALI.JK", "LSIP.JK", "SSMS.JK", "BISI.JK", "BWPT.JK", "HRUM.JK",
-                    "DOID.JK", "PTBA.JK", "ITMG.JK", "MBAP.JK", "GEMS.JK", "PSAB.JK",
-                    "DKFT.JK", "CITA.JK", "MDKA.JK", "BRMS.JK", "ZINC.JK", "GGRP.JK",
-                    "NCKL.JK", "FREN.JK", "ISAT.JK", "TPIA.JK", "INDY.JK", "ARTO.JK"
-                ]
-                tickers = st.multiselect(
-                    "Pilih Saham:", 
-                    tickers_list, 
-                    default=["BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK",
-                    "ICBP.JK", "INDF.JK", "SMGR.JK", "KLBF.JK", "BBNI.JK", "BRIS.JK"]
-                )
+                tickers_list = df_saham.iloc[:, 0].dropna().tolist()
+
+                selected_tickers = st.multiselect(
+                            "Pilih Saham:", 
+                            options=tickers_list,
+                            default=["BBCA", "BBRI", "BMRI", "ASII", "TLKM", "UNVR"]
+                        )
+                # --- Tambahkan suffix .JK untuk yfinance ---
+                tickers = [ticker + ".JK" for ticker in selected_tickers]
 
                 # --- Pilih mode date ---
                 date_mode = st.radio("Pilih Mode Waktu:", ["Time Horizon Cepat", "Custom Date Range"])
@@ -801,7 +790,25 @@ with tab1:
                         st.write(reply)
 
 with tab2:
-    "test"
+    st.subheader("📊 Daftar Saham BEI")
+
+    # --- Styling biar tabel bagus ---
+    styled_df = (
+        df_saham.style
+        .set_properties(**{"text-align": "center"})
+        .set_table_styles(
+            [
+                {"selector": "th", "props": [
+                    ("background-color", "#FAB12F"),
+                    ("color", "black"),
+                    ("font-weight", "bold"),
+                    ("text-align", "center")
+                ]}
+            ]
+        )
+    )
+
+    st.dataframe(styled_df, use_container_width=True, height=500)
 
 with st.container(border=False):
     st.caption("Copyrights @2025 by Ferdyansyah P Putra")
