@@ -28,35 +28,7 @@ from scipy.stats import shapiro, jarque_bera
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("🔮 STOCK INTELLIGENCE HUB")
 st.badge("Selamat datang di STOCK INTELLIGENCE HUB 🚀", color="violet")
-st.markdown(
-                f"""
-                <style>
-                .hover-box1 {{
-                    border: 1px solid #FAB12F;
-                    border-radius: 10px;
-                    padding: 5px;
-                    text-align: center;
-                    background-color: rgba(250, 177, 47, 0.7);
-                    color: black;
-                    transition: 0.3s;
-                    position: relative;
-                    margin-top: 1px;
-                    font-size: 18px;
-                    font-family: 'Poppins';
-                }}
-                .hover-box1:hover {{
-                    background-color: rgba(250, 177, 47, 0.7);
-                    transform: scale(1.01);
-                }}
-
-                </style>
-
-                <div class="hover-box1">
-                    <b>Dashboard ini dibuat supaya stakeholders bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell.</b>
-                </div>
-                <p></p>
-                """, unsafe_allow_html=True
-            )
+st.info("Dashboard ini dibuat supaya stakeholders bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell.")
 
 # --- Layout 2 kolom ---
 col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
