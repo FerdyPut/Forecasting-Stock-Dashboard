@@ -623,6 +623,7 @@ with tab1:
         )
             with st.container(border=True):
 
+                sahamm = [ticker + ".JK" for ticker in tickers_list]
                 # --- Pilih saham & metric ---
                 saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
                 metric_choice = st.session_state.metric_choice
