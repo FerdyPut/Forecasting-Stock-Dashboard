@@ -763,17 +763,34 @@ with col1:
             f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {saham_choice}."
         )
 
-        # Pilihan arah tren
-        trend = st.radio(
-            "📊 Pilih arah tren forecast:",
-            ["📉 Menurun", "📈 Menaik", "➖ Stagnan"]
-        )
+        st.subheader("🤖 Chatbot Insight")
 
-        # Rekomendasi berdasarkan tren
-        if trend == "📉 Menurun":
-            st.warning("👉 Prediksi harga menurun. Disarankan **jual / hindari beli dulu**. "
-                    "Investor jangka panjang bisa menunggu momentum beli di harga bawah.")
-        elif trend == "📈 Menaik":
-            st.success("👉 Prediksi harga naik. Disarankan **beli / hold** untuk memaksimalkan potensi keuntungan.")
-        elif trend == "➖ Stagnan":
-            st.info("👉 Prediksi harga stagnan. Disarankan **hold** karena peluang profit masih terbatas.")
+        # simpan riwayat percakapan
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        # tampilkan riwayat
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+
+        # input user
+        if prompt := st.chat_input("Tanyakan arah tren (contoh: menurun, naik, stagnan)..."):
+            # tampilkan pesan user
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.write(prompt)
+
+            # respon chatbot
+            if "menurun" in prompt.lower():
+                reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
+            elif "naik" in prompt.lower() or "menaik" in prompt.lower():
+                reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
+            elif "stagnan" in prompt.lower() or "lurus" in prompt.lower():
+                reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
+            else:
+                reply = "🤔 Saya hanya bisa menjawab tren: menurun, naik, atau stagnan."
+
+            st.session_state.messages.append({"role": "assistant", "content": reply})
+            with st.chat_message("assistant"):
+                st.write(reply)
