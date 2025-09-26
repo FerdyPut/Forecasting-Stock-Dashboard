@@ -594,11 +594,16 @@ with col2:
 
         # --- Cek stasioneritas ---
         adf_result = adfuller(train)
+        p_value = adf_result[1]
         if adf_result[1] > 0.05:
             ts_diff = ts.diff().dropna()
             train, test = ts_diff.iloc[:train_size], ts_diff.iloc[train_size:]
+            st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}). "
+                       "Menggunakan differencing (Δ) agar stasioner.")
         else:
             ts_diff = ts
+            st.success(f"✅ Data stasioner (p-value = {p_value:.4f}), tidak perlu differencing.")
+
 
         # =======================
         # Forecasting sesuai pilihan
