@@ -588,7 +588,8 @@ with col2:
         method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
         
         
-        st.badge(f"Asumsi Lengkap **")
+        st.badge(f"Asumsi Lengkap untuk metode ARIMA! (Stasioner, Normal, dan Autokorelasi)")
+        st.markdown("Ketika, salah satu asumsi tidak terpenuhi, maka sudah distransformasi!")
 
         ts = data[metric_choice][saham_choice].dropna()
 
