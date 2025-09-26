@@ -636,7 +636,8 @@ with col2:
         # Visualisasi interaktif
         # =======================
         if forecast is not None:
-            df_actual = pd.DataFrame({
+            # Gabungkan actual dan forecast
+            df_plot = pd.DataFrame({
                 "Date": ts.index,
                 "Actual": ts.values
             })
@@ -645,19 +646,25 @@ with col2:
                 "Forecast": forecast
             })
 
-            df_plot = pd.concat([df_actual, df_forecast])
+            df_all = pd.merge(df_plot, df_forecast, on="Date", how="outer")
 
-            line_chart = alt.Chart(df_plot).mark_line().encode(
+            # Reshape ke long format
+            df_long = df_all.melt("Date", var_name="Type", value_name="Value")
+
+            line_chart = alt.Chart(df_long).mark_line().encode(
                 x="Date:T",
                 y="Value:Q",
-                color=alt.Color("Type:N", scale=alt.Scale(domain=["Actual", "Forecast"],
-                                                        range=["black", "#ee6525"])),
-                strokeDash=alt.StrokeDash("Type:N", scale=alt.Scale(domain=["Actual", "Forecast"],
-                                                                range=[[1, 0], [4, 4]])),
+                color=alt.Color("Type:N",
+                                scale=alt.Scale(domain=["Actual", "Forecast"],
+                                                range=["#1a69e0", "#ee6525"])),
+                strokeDash=alt.StrokeDash("Type:N",
+                                        scale=alt.Scale(domain=["Actual", "Forecast"],
+                                                        range=[[1, 0], [4, 4]])),
                 tooltip=["Date:T", "Value:Q", "Type:N"]
             )
 
             st.altair_chart(line_chart, use_container_width=True)
+
 
             # --- RMSE ---
             rmse = np.sqrt(mean_squared_error(test, forecast))
