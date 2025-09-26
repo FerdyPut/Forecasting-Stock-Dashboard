@@ -605,15 +605,17 @@ with col2:
             ts_diff = ts
 
         # =======================
-        # 1. ARIMA
+        # 1. ARIMA (statsmodels)
         # =======================
         try:
-            model_arima = auto_arima(train, seasonal=False, suppress_warnings=True, stepwise=True)
-            forecast_arima = model_arima.predict(n_periods=len(test))
+            # order default (1,1,1), bisa dioptimasi manual/grid search
+            model_arima = ARIMA(train, order=(1, 1, 1))
+            model_fit = model_arima.fit()
+            forecast_arima = model_fit.forecast(steps=len(test))
         except Exception as e:
             st.error(f"ARIMA error: {e}")
             forecast_arima = [np.nan] * len(test)
-
+            
         # =======================
         # 2. Holt-Winters
         # =======================
