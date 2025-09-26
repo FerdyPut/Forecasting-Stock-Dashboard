@@ -586,6 +586,9 @@ with col2:
         saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
         metric_choice = st.session_state.metric_choice
         method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
+        
+        
+        st.badge(f"Asumsi Lengkap **")
 
         ts = data[metric_choice][saham_choice].dropna()
 
