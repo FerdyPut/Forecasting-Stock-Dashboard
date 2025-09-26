@@ -799,7 +799,49 @@ with tab1:
                     st.error("Terdapat Error pada Fiture Forecasting! Silahkan Cermati Errornya!")
 
 with tab2:
-    st.subheader("📊 Daftar Saham BEI")
+    st.markdown(
+                    f"""
+                    <style>
+                    .hover-box {{
+                        border: 1px solid #5b4699;
+                        border-radius: 10px;
+                        padding: 5px;
+                        text-align: center;
+                        background-color: #5b4699;
+                        color: white;
+                        transition: 0.3s;
+                        position: relative;
+                        margin-top: 1px;
+                        font-size: 18px;
+                        font-family: 'Poppins', sans-serif;
+                    }}
+                    .hover-box:hover {{
+                        background-color: #5b4699;
+                        transform: scale(1.01);
+                    }}
+                    .download-btn {{
+                        display: none;
+                        margin-top: 10px;
+                    }}
+                    .hover-box:hover .download-btn {{
+                        display: block;
+                    }}
+                    a.download-link {{
+                        color: white;
+                        text-decoration: none;
+                        padding: 5px 10px;
+                        background-color: #615fff;
+                        border-radius: 5px;
+                        font-weight: bold;
+                    }}
+                    </style>
+
+                    <div class="hover-box">
+                        <strong>DAFTAR SAHAM BEI</strong>
+                    </div>
+                    <p></p>
+                    """, unsafe_allow_html=True
+                )
     st.info("Adapun daftar saham-saham ini berdasarkan dari perusahaan saham yang terdaftar di Bursa Efek Indonesia per September 2025")
 
     # --- Styling biar tabel bagus ---
