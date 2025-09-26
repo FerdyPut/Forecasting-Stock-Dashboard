@@ -648,10 +648,10 @@ with col2:
         if p_value > 0.05:
             ts = ts.diff().dropna()
             train, test = ts.iloc[:train_size], ts.iloc[train_size:]
-            if method_choice == "ARIMA" and method_choice == "Holt-Winters":
+            if method_choice == "ARIMA" or method_choice == "Holt-Winters":
                 st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
         else:
-            if method_choice == "ARIMA" and method_choice == "Holt-Winters":
+            if method_choice == "ARIMA" or method_choice == "Holt-Winters":
                 st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
 
         # =====================================================
