@@ -754,3 +754,26 @@ with col2:
             mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
             st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
             st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
+
+with col1:
+        st.subheader("🤖 Insight AI")
+    
+        st.info(
+            f"Nilai MAPE metode {method_choice}: {mape:.2f}% → "
+            f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {ticker}."
+        )
+
+        # Pilihan arah tren
+        trend = st.radio(
+            "📊 Pilih arah tren forecast:",
+            ["📉 Menurun", "📈 Menaik", "➖ Stagnan"]
+        )
+
+        # Rekomendasi berdasarkan tren
+        if trend == "📉 Menurun":
+            st.warning("👉 Prediksi harga menurun. Disarankan **jual / hindari beli dulu**. "
+                    "Investor jangka panjang bisa menunggu momentum beli di harga bawah.")
+        elif trend == "📈 Menaik":
+            st.success("👉 Prediksi harga naik. Disarankan **beli / hold** untuk memaksimalkan potensi keuntungan.")
+        elif trend == "➖ Stagnan":
+            st.info("👉 Prediksi harga stagnan. Disarankan **hold** karena peluang profit masih terbatas.")
