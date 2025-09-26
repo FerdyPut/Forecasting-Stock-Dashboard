@@ -583,7 +583,8 @@ with col2:
         # --- Pilih saham & metric ---
         saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
         metric_choice = st.session_state.metric_choice
-        st.write(f"📊 Forecasting untuk **{saham_choice} - {metric_choice}**")
+        method_choice = st.selectbox("Pilih Metode Forecasting", ["ARIMA", "Holt-Winters", "SVR"])
+        st.write(f"📊 Forecasting **{saham_choice} - {metric_choice}** dengan metode **{method_choice}**")
 
         ts = data[metric_choice][saham_choice].dropna()
 
@@ -591,81 +592,73 @@ with col2:
         train_size = int(len(ts) * 0.8)
         train, test = ts.iloc[:train_size], ts.iloc[train_size:]
 
-        # --- Cek stasioneritas (ADF Test) ---
+        # --- Cek stasioneritas ---
         adf_result = adfuller(train)
-        st.write("ADF Statistic:", round(adf_result[0], 3))
-        st.write("p-value:", round(adf_result[1], 3))
         if adf_result[1] > 0.05:
-            st.warning("⚠️ Data tidak stasioner → dilakukan differencing untuk ARIMA")
             ts_diff = ts.diff().dropna()
             train, test = ts_diff.iloc[:train_size], ts_diff.iloc[train_size:]
         else:
             ts_diff = ts
 
         # =======================
-        # 1. ARIMA (statsmodels)
+        # Forecasting sesuai pilihan
         # =======================
+        forecast = None
         try:
-            # order default (1,1,1), bisa dioptimasi manual/grid search
-            model_arima = ARIMA(train, order=(1, 1, 1))
-            model_fit = model_arima.fit()
-            forecast_arima = model_fit.forecast(steps=len(test))
+            if method_choice == "ARIMA":
+                model_arima = ARIMA(train, order=(1, 1, 1))
+                model_fit = model_arima.fit()
+                forecast = model_fit.forecast(steps=len(test))
+
+            elif method_choice == "Holt-Winters":
+                if len(train) > 20:
+                    model_hw = ExponentialSmoothing(train, trend="add", seasonal="add", seasonal_periods=12)
+                    model_hw_fit = model_hw.fit()
+                else:
+                    model_hw = SimpleExpSmoothing(train)
+                    model_hw_fit = model_hw.fit()
+                forecast = model_hw_fit.forecast(len(test))
+
+            elif method_choice == "SVR":
+                scaler = MinMaxScaler()
+                X_train = np.arange(len(train)).reshape(-1, 1)
+                y_train = scaler.fit_transform(train.values.reshape(-1, 1)).ravel()
+                svr = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
+                svr.fit(X_train, y_train)
+
+                X_test = np.arange(len(train), len(train) + len(test)).reshape(-1, 1)
+                forecast_svr_scaled = svr.predict(X_test)
+                forecast = scaler.inverse_transform(forecast_svr_scaled.reshape(-1, 1)).ravel()
         except Exception as e:
-            st.error(f"ARIMA error: {e}")
-            forecast_arima = [np.nan] * len(test)
+            st.error(f"{method_choice} error: {e}")
 
         # =======================
-        # 2. Holt-Winters
+        # Visualisasi interaktif
         # =======================
-        try:
-            if len(train) > 20:  # minimal data
-                model_hw = ExponentialSmoothing(train, trend="add", seasonal="add", seasonal_periods=12)
-                model_hw_fit = model_hw.fit()
-            else:
-                model_hw = SimpleExpSmoothing(train)
-                model_hw_fit = model_hw.fit()
-            forecast_hw = model_hw_fit.forecast(len(test))
-        except Exception as e:
-            st.error(f"Holt-Winters error: {e}")
-            forecast_hw = [np.nan] * len(test)
+        if forecast is not None:
+            df_plot = pd.DataFrame({
+                "Date": ts.index,
+                "Actual": ts.values
+            })
+            df_forecast = pd.DataFrame({
+                "Date": test.index,
+                "Forecast": forecast
+            })
 
-        # =======================
-        # 3. SVR
-        # =======================
-        try:
-            scaler = MinMaxScaler()
-            X_train = np.arange(len(train)).reshape(-1, 1)
-            y_train = scaler.fit_transform(train.values.reshape(-1, 1)).ravel()
+            base = alt.Chart(df_plot).mark_line(color="black").encode(
+                x="Date:T",
+                y="Actual:Q",
+                tooltip=["Date:T", "Actual:Q"]
+            )
 
-            svr = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
-            svr.fit(X_train, y_train)
+            forecast_line = alt.Chart(df_forecast).mark_line(color="red", strokeDash=[4, 4]).encode(
+                x="Date:T",
+                y="Forecast:Q",
+                tooltip=["Date:T", "Forecast:Q"]
+            )
 
-            X_test = np.arange(len(train), len(train) + len(test)).reshape(-1, 1)
-            forecast_svr_scaled = svr.predict(X_test)
-            forecast_svr = scaler.inverse_transform(forecast_svr_scaled.reshape(-1, 1)).ravel()
-        except Exception as e:
-            st.error(f"SVR error: {e}")
-            forecast_svr = [np.nan] * len(test)
+            st.altair_chart(base + forecast_line, use_container_width=True)
 
-        # =======================
-        # Evaluasi & Plot
-        # =======================
-        results = {
-            "ARIMA": forecast_arima,
-            "Holt-Winters": forecast_hw,
-            "SVR": forecast_svr
-        }
-
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.plot(ts.index, ts.values, label="Actual", color="black")
-        ax.plot(test.index, forecast_arima, label="ARIMA Forecast", linestyle="--")
-        ax.plot(test.index, forecast_hw, label="Holt-Winters Forecast", linestyle="--")
-        ax.plot(test.index, forecast_svr, label="SVR Forecast", linestyle="--")
-        ax.legend()
-        st.pyplot(fig)
-
-        # --- RMSE ---
-        for model_name, forecast in results.items():
-            if not np.isnan(forecast).all():
-                rmse = np.sqrt(mean_squared_error(test, forecast))
-                st.write(f"✅ RMSE {model_name}: {rmse:.2f}")
+            # --- RMSE ---
+            rmse = np.sqrt(mean_squared_error(test, forecast))
+            st.write(f"✅ RMSE {method_choice}: {rmse:.2f}")
