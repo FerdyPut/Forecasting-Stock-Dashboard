@@ -637,126 +637,126 @@ with tab1:
                 if ts.empty:
                    st.error("⚠️ Error: Data tidak tersedia. Silakan ganti time horizon atau pilih saham lainnya.")
                 else:
-                    ts
-                # --- Train-test split ---
-                train_size = int(len(ts) * 0.8)
-                train, test = ts.iloc[:train_size], ts.iloc[train_size:]
-
-                # =====================================================
-                # 1. CEK ASUMSI STASIONERITAS (ADF Test)
-                # =====================================================
-                adf_result = adfuller(train)
-                p_value = adf_result[1]
-
-                if p_value > 0.05:
-                    ts = ts.diff().dropna()
+                
+                    # --- Train-test split ---
+                    train_size = int(len(ts) * 0.8)
                     train, test = ts.iloc[:train_size], ts.iloc[train_size:]
-                    if method_choice == "ARIMA" or method_choice == "Holt-Winters":
-                        st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
-                else:
-                    if method_choice == "ARIMA" or method_choice == "Holt-Winters":
-                        st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
 
-                # =====================================================
-                # 2. Cek ASUMSI RESIDUAL (WHITE NOISE, NORMALITAS)
-                # =====================================================
-                # Sementara kita cek untuk ARIMA saja
-                if method_choice == "ARIMA":
-                    try:
-                        model_arima = ARIMA(train, order=(1, 1, 1))
-                        model_fit = model_arima.fit()
+                    # =====================================================
+                    # 1. CEK ASUMSI STASIONERITAS (ADF Test)
+                    # =====================================================
+                    adf_result = adfuller(train)
+                    p_value = adf_result[1]
 
-                        resid = model_fit.resid
+                    if p_value > 0.05:
+                        ts = ts.diff().dropna()
+                        train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+                        if method_choice == "ARIMA" or method_choice == "Holt-Winters":
+                            st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
+                    else:
+                        if method_choice == "ARIMA" or method_choice == "Holt-Winters":
+                            st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
 
-                        # --- Ljung-Box test (cek autokorelasi residual) ---
-                        lb_test = acorr_ljungbox(resid, lags=[10], return_df=True)
-                        lb_pval = lb_test["lb_pvalue"].iloc[0]
-
-                        if lb_pval > 0.05:
-                            st.success(f"✅ Residual memenuhi asumsi white noise (Ljung-Box p = {lb_pval:.4f})")
-                        else:
-                            st.warning(f"⚠️ Residual masih ada autokorelasi (Ljung-Box p = {lb_pval:.4f})")
-
-                        # --- Normalitas residual ---
-                        jb_stat, jb_pval = jarque_bera(resid)
-                        if jb_pval > 0.05:
-                            st.success(f"✅ Residual berdistribusi normal (JB p = {jb_pval:.4f})")
-                        else:
-                            st.warning(f"⚠️ Residual tidak normal (JB p = {jb_pval:.4f})")
-
-                    except Exception as e:
-                        st.error(f"Gagal fitting ARIMA untuk uji asumsi: {e}")
-
-                # =====================================================
-                # 3. Forecasting sesuai pilihan
-                # =====================================================
-                st.write(f"📊 Forecasting **{saham_choice} - {metric_choice}** dengan metode **{method_choice}**")
-
-                forecast = None
-                try:
+                    # =====================================================
+                    # 2. Cek ASUMSI RESIDUAL (WHITE NOISE, NORMALITAS)
+                    # =====================================================
+                    # Sementara kita cek untuk ARIMA saja
                     if method_choice == "ARIMA":
-                        model_arima = ARIMA(train, order=(1, 1, 1))
-                        model_fit = model_arima.fit()
-                        forecast = model_fit.forecast(steps=len(test))
+                        try:
+                            model_arima = ARIMA(train, order=(1, 1, 1))
+                            model_fit = model_arima.fit()
 
-                    elif method_choice == "Holt-Winters":
-                        if len(train) > 20:
-                            model_hw = ExponentialSmoothing(train, trend="add", seasonal="add", seasonal_periods=12)
-                            model_hw_fit = model_hw.fit()
-                        else:
-                            model_hw = SimpleExpSmoothing(train)
-                            model_hw_fit = model_hw.fit()
-                        forecast = model_hw_fit.forecast(len(test))
+                            resid = model_fit.resid
 
-                    elif method_choice == "SVR":
-                        scaler = MinMaxScaler()
-                        X_train = np.arange(len(train)).reshape(-1, 1)
-                        y_train = scaler.fit_transform(train.values.reshape(-1, 1)).ravel()
-                        svr = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
-                        svr.fit(X_train, y_train)
+                            # --- Ljung-Box test (cek autokorelasi residual) ---
+                            lb_test = acorr_ljungbox(resid, lags=[10], return_df=True)
+                            lb_pval = lb_test["lb_pvalue"].iloc[0]
 
-                        X_test = np.arange(len(train), len(train) + len(test)).reshape(-1, 1)
-                        forecast_svr_scaled = svr.predict(X_test)
-                        forecast = scaler.inverse_transform(forecast_svr_scaled.reshape(-1, 1)).ravel()
-                except Exception as e:
-                    st.error(f"{method_choice} error: {e}")
+                            if lb_pval > 0.05:
+                                st.success(f"✅ Residual memenuhi asumsi white noise (Ljung-Box p = {lb_pval:.4f})")
+                            else:
+                                st.warning(f"⚠️ Residual masih ada autokorelasi (Ljung-Box p = {lb_pval:.4f})")
 
-                # =====================================================
-                # 4. Visualisasi + MAPE
-                # =====================================================
-                if forecast is not None:
-                    df_plot = pd.DataFrame({"Date": ts.index, "Actual": ts.values})
-                    df_forecast = pd.DataFrame({"Date": test.index, "Forecast": forecast})
-                    df_all = pd.merge(df_plot, df_forecast, on="Date", how="outer")
+                            # --- Normalitas residual ---
+                            jb_stat, jb_pval = jarque_bera(resid)
+                            if jb_pval > 0.05:
+                                st.success(f"✅ Residual berdistribusi normal (JB p = {jb_pval:.4f})")
+                            else:
+                                st.warning(f"⚠️ Residual tidak normal (JB p = {jb_pval:.4f})")
 
-                    df_long = df_all.melt("Date", var_name="Type", value_name="Value")
+                        except Exception as e:
+                            st.error(f"Gagal fitting ARIMA untuk uji asumsi: {e}")
 
-                    line_chart = alt.Chart(df_long).mark_line().encode(
-                        x="Date:T",
-                        y="Value:Q",
-                        color=alt.Color("Type:N",
-                                        scale=alt.Scale(domain=["Actual", "Forecast"],
-                                                        range=["#1a69e0", "#ee6525"])),
-                        strokeDash=alt.StrokeDash("Type:N",
-                                                scale=alt.Scale(domain=["Actual", "Forecast"],
-                                                                range=[[1, 0], [4, 4]])),
-                        tooltip=["Date:T", "Value:Q", "Type:N"]
-                    )
+                    # =====================================================
+                    # 3. Forecasting sesuai pilihan
+                    # =====================================================
+                    st.write(f"📊 Forecasting **{saham_choice} - {metric_choice}** dengan metode **{method_choice}**")
 
-                    st.altair_chart(line_chart, use_container_width=True)
+                    forecast = None
+                    try:
+                        if method_choice == "ARIMA":
+                            model_arima = ARIMA(train, order=(1, 1, 1))
+                            model_fit = model_arima.fit()
+                            forecast = model_fit.forecast(steps=len(test))
 
-                    # --- MAPE ---
+                        elif method_choice == "Holt-Winters":
+                            if len(train) > 20:
+                                model_hw = ExponentialSmoothing(train, trend="add", seasonal="add", seasonal_periods=12)
+                                model_hw_fit = model_hw.fit()
+                            else:
+                                model_hw = SimpleExpSmoothing(train)
+                                model_hw_fit = model_hw.fit()
+                            forecast = model_hw_fit.forecast(len(test))
 
-                    # pastikan array
-                    y_true = np.array(test)
-                    y_pred = np.array(forecast)
+                        elif method_choice == "SVR":
+                            scaler = MinMaxScaler()
+                            X_train = np.arange(len(train)).reshape(-1, 1)
+                            y_train = scaler.fit_transform(train.values.reshape(-1, 1)).ravel()
+                            svr = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
+                            svr.fit(X_train, y_train)
 
-                    # buang nilai nol atau NaN pada data aktual
-                    mask = (y_true != 0) & ~np.isnan(y_true) & ~np.isnan(y_pred)
+                            X_test = np.arange(len(train), len(train) + len(test)).reshape(-1, 1)
+                            forecast_svr_scaled = svr.predict(X_test)
+                            forecast = scaler.inverse_transform(forecast_svr_scaled.reshape(-1, 1)).ravel()
+                    except Exception as e:
+                        st.error(f"{method_choice} error: {e}")
 
-                    mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
-                    st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
-                    st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
+                    # =====================================================
+                    # 4. Visualisasi + MAPE
+                    # =====================================================
+                    if forecast is not None:
+                        df_plot = pd.DataFrame({"Date": ts.index, "Actual": ts.values})
+                        df_forecast = pd.DataFrame({"Date": test.index, "Forecast": forecast})
+                        df_all = pd.merge(df_plot, df_forecast, on="Date", how="outer")
+
+                        df_long = df_all.melt("Date", var_name="Type", value_name="Value")
+
+                        line_chart = alt.Chart(df_long).mark_line().encode(
+                            x="Date:T",
+                            y="Value:Q",
+                            color=alt.Color("Type:N",
+                                            scale=alt.Scale(domain=["Actual", "Forecast"],
+                                                            range=["#1a69e0", "#ee6525"])),
+                            strokeDash=alt.StrokeDash("Type:N",
+                                                    scale=alt.Scale(domain=["Actual", "Forecast"],
+                                                                    range=[[1, 0], [4, 4]])),
+                            tooltip=["Date:T", "Value:Q", "Type:N"]
+                        )
+
+                        st.altair_chart(line_chart, use_container_width=True)
+
+                        # --- MAPE ---
+
+                        # pastikan array
+                        y_true = np.array(test)
+                        y_pred = np.array(forecast)
+
+                        # buang nilai nol atau NaN pada data aktual
+                        mask = (y_true != 0) & ~np.isnan(y_true) & ~np.isnan(y_pred)
+
+                        mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
+                        st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
+                        st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
 
         with col1:
             with st.container(border=True):
