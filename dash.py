@@ -794,5 +794,5 @@ with col1:
             with st.chat_message("assistant"):
                 st.write(reply)
 
-with st.container(border=True):
+with st.container(border=False):
     st.caption("Copyrights @2025 by Ferdyansyah P Putra")
