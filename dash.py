@@ -585,8 +585,7 @@ with col2:
         # --- Pilih saham & metric ---
         saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
         metric_choice = st.session_state.metric_choice
-        method_choice = st.selectbox("Pilih Metode Forecasting", ["ARIMA", "Holt-Winters", "SVR"])
-        st.write(f"📊 Forecasting **{saham_choice} - {metric_choice}** dengan metode **{method_choice}**")
+        method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
 
         ts = data[metric_choice][saham_choice].dropna()
 
@@ -640,6 +639,8 @@ with col2:
         # =====================================================
         # 3. Forecasting sesuai pilihan
         # =====================================================
+        st.write(f"📊 Forecasting **{saham_choice} - {metric_choice}** dengan metode **{method_choice}**")
+
         forecast = None
         try:
             if method_choice == "ARIMA":
