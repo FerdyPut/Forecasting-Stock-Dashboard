@@ -744,4 +744,4 @@ with col2:
 
             # --- RMSE ---
             rmse = np.sqrt(mean_squared_error(test, forecast))
-            st.write(f"✅ RMSE (Pengukuran yang menunjukkan semakin kecil nilai RMSE semakin baik dalam memprediksi) {method_choice}: {rmse:.2f}")
+            st.success(f"✅ RMSE (Pengukuran yang menunjukkan semakin kecil nilai RMSE semakin baik dalam memprediksi) {method_choice}: {rmse:.2f}")
