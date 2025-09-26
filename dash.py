@@ -626,9 +626,6 @@ with tab1:
                 sahamm = [ticker + ".JK" for ticker in tickers_list]
                 # --- Pilih saham & metric ---
                 saham_choice = st.selectbox("Pilih Saham untuk Forecasting", sahamm)
-                if saham_choice.empty:
-                   st.error("⚠️ Error: Data tidak tersedia. Silakan ganti time horizon atau pilih saham lainnya.")
-
                 metric_choice = st.session_state.metric_choice
                 method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
                 
@@ -637,6 +634,8 @@ with tab1:
                 st.markdown("Ketika, salah satu asumsi tidak terpenuhi, maka sudah ditransformasi!. Diharapkan, lebih bagus menggunakan metode SVR mengantisipasi cek Asumsi")
 
                 ts = data[metric_choice][saham_choice].dropna()
+                if ts.empty:
+                   st.error("⚠️ Error: Data tidak tersedia. Silakan ganti time horizon atau pilih saham lainnya.")
 
                 # --- Train-test split ---
                 train_size = int(len(ts) * 0.8)
