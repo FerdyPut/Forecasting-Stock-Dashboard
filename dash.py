@@ -28,7 +28,49 @@ from scipy.stats import shapiro, jarque_bera
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("🔮 STOCK INTELLIGENCE HUB")
 st.badge("Selamat datang di STOCK INTELLIGENCE HUB 🚀", color="violet")
-st.caption("Di sini, Anda bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell. Semua insight ada di ujung jari Anda.")
+st.markdown(
+                f"""
+                <style>
+                .hover-box {{
+                    border: 1px solid #5b4699;
+                    border-radius: 10px;
+                    padding: 5px;
+                    text-align: center;
+                    background-color: #5b4699;
+                    color: white;
+                    transition: 0.3s;
+                    position: relative;
+                    margin-top: 1px;
+                    font-size: 18px;
+                    font-family: 'Poppins', sans-serif;
+                }}
+                .hover-box:hover {{
+                    background-color: #5b4699;
+                    transform: scale(1.01);
+                }}
+                .download-btn {{
+                    display: none;
+                    margin-top: 10px;
+                }}
+                .hover-box:hover .download-btn {{
+                    display: block;
+                }}
+                a.download-link {{
+                    color: white;
+                    text-decoration: none;
+                    padding: 5px 10px;
+                    background-color: #615fff;
+                    border-radius: 5px;
+                    font-weight: bold;
+                }}
+                </style>
+
+                <div class="hover-box">
+                    <strong>Di sini, Anda bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell. Semua insight ada di ujung jari Anda.</strong>
+                </div>
+                <p></p>
+                """, unsafe_allow_html=True
+            )
 
 # --- Layout 2 kolom ---
 col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
