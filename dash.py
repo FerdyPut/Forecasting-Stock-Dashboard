@@ -18,6 +18,10 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from prophet import Prophet
+from pmdarima import auto_arima
+from sklearn.svm import SVR
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
 
 # --- Page Config ---
 
@@ -576,87 +580,92 @@ with col1:
 
 with col2:
     with st.container(border=True):
-        st.subheader("🔍 EDA & Forecasting Saham")
+        st.subheader("📈 Forecasting Saham")
 
-        # --- Pilih metric & saham ---
+        # --- Pilih saham & metric ---
+        saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
         metric_choice = st.session_state.metric_choice
-        forecast_saham = st.selectbox("Pilih Saham untuk Forecasting", tickers)
-        ts = data[metric_choice][forecast_saham].dropna()
+        st.write(f"📊 Forecasting untuk **{saham_choice} - {metric_choice}**")
 
-        st.line_chart(ts, height=300)
-
-        # --- Seasonal Decomposition ---
-
-        try:
-            decomposition = seasonal_decompose(ts, period=30)  # asumsinya monthly seasonality
-            st.write("### 📉 Seasonal Decomposition")
-            st.pyplot(decomposition.plot())
-        except Exception as e:
-            st.warning(f"Decomposition error: {e}")
-
-        # --- ADF Test (cek stasioneritas) ---
-        
-        adf_result = adfuller(ts)
-        st.write("### 🧪 ADF Test")
-        st.write(f"ADF Statistic: {adf_result[0]:.4f}")
-        st.write(f"p-value: {adf_result[1]:.4f}")
-        if adf_result[1] > 0.05:
-            st.warning("⚠️ Data tidak stasioner (p > 0.05). Disarankan transformasi/differencing.")
-            ts_transformed = ts.diff().dropna()
-        else:
-            st.success("✅ Data sudah stasioner")
-            ts_transformed = ts
-
-        # --- ACF & PACF Plot ---
-
-
-        fig, ax = plt.subplots(1, 2, figsize=(12,4))
-        plot_acf(ts_transformed, ax=ax[0], lags=20)
-        plot_pacf(ts_transformed, ax=ax[1], lags=20)
-        st.pyplot(fig)
+        ts = data[metric_choice][saham_choice].dropna()
 
         # --- Train-test split ---
-        train_size = int(len(ts_transformed) * 0.8)
-        train, test = ts_transformed[:train_size], ts_transformed[train_size:]
+        train_size = int(len(ts) * 0.8)
+        train, test = ts.iloc[:train_size], ts.iloc[train_size:]
 
-        # --- ARIMA Forecast ---
-        
+        # --- Cek stasioneritas (ADF Test) ---
+        adf_result = adfuller(train)
+        st.write("ADF Statistic:", round(adf_result[0], 3))
+        st.write("p-value:", round(adf_result[1], 3))
+        if adf_result[1] > 0.05:
+            st.warning("⚠️ Data tidak stasioner → dilakukan differencing untuk ARIMA")
+            ts_diff = ts.diff().dropna()
+            train, test = ts_diff.iloc[:train_size], ts_diff.iloc[train_size:]
+        else:
+            ts_diff = ts
+
+        # =======================
+        # 1. ARIMA
+        # =======================
         try:
-            arima_model = ARIMA(train, order=(1,1,1))
-            arima_fit = arima_model.fit()
-            forecast_arima = arima_fit.forecast(steps=len(test))
-
-            st.write("### 📈 ARIMA Forecast")
-            st.line_chart(pd.DataFrame({"Actual": test, "Forecast": forecast_arima}, index=test.index))
+            model_arima = auto_arima(train, seasonal=False, suppress_warnings=True, stepwise=True)
+            forecast_arima = model_arima.predict(n_periods=len(test))
         except Exception as e:
             st.error(f"ARIMA error: {e}")
+            forecast_arima = [np.nan] * len(test)
 
-        # --- Holt-Winters Forecast ---
-
+        # =======================
+        # 2. Holt-Winters
+        # =======================
         try:
-            hw_model = ExponentialSmoothing(train, trend="add", seasonal=None)
-            hw_fit = hw_model.fit()
-            forecast_hw = hw_fit.forecast(len(test))
-
-            st.write("### 📉 Holt-Winters Forecast")
-            st.line_chart(pd.DataFrame({"Actual": test, "Forecast": forecast_hw}, index=test.index))
+            if len(train) > 20:  # minimal data
+                model_hw = ExponentialSmoothing(train, trend="add", seasonal="add", seasonal_periods=12)
+                model_hw_fit = model_hw.fit()
+            else:
+                model_hw = SimpleExpSmoothing(train)
+                model_hw_fit = model_hw.fit()
+            forecast_hw = model_hw_fit.forecast(len(test))
         except Exception as e:
             st.error(f"Holt-Winters error: {e}")
+            forecast_hw = [np.nan] * len(test)
 
-        # --- Prophet Forecast ---
+        # =======================
+        # 3. SVR
+        # =======================
         try:
-            prophet_df = ts.reset_index()[["Date", forecast_saham]].rename(columns={"Date":"ds", forecast_saham:"y"})
-            prophet_train = prophet_df.iloc[:train_size]
-            prophet_test = prophet_df.iloc[train_size:]
+            scaler = MinMaxScaler()
+            X_train = np.arange(len(train)).reshape(-1, 1)
+            y_train = scaler.fit_transform(train.values.reshape(-1, 1)).ravel()
 
-            prophet_model = Prophet(daily_seasonality=True)
-            prophet_model.fit(prophet_train)
+            svr = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
+            svr.fit(X_train, y_train)
 
-            future = prophet_model.make_future_dataframe(periods=len(prophet_test))
-            forecast = prophet_model.predict(future)
-
-            st.write("### 🔮 Prophet Forecast")
-            fig1 = prophet_model.plot(forecast)
-            st.pyplot(fig1)
+            X_test = np.arange(len(train), len(train) + len(test)).reshape(-1, 1)
+            forecast_svr_scaled = svr.predict(X_test)
+            forecast_svr = scaler.inverse_transform(forecast_svr_scaled.reshape(-1, 1)).ravel()
         except Exception as e:
-            st.error(f"Prophet error: {e}")
+            st.error(f"SVR error: {e}")
+            forecast_svr = [np.nan] * len(test)
+
+        # =======================
+        # Evaluasi & Plot
+        # =======================
+        results = {
+            "ARIMA": forecast_arima,
+            "Holt-Winters": forecast_hw,
+            "SVR": forecast_svr
+        }
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(ts.index, ts.values, label="Actual", color="black")
+        ax.plot(test.index, forecast_arima, label="ARIMA Forecast", linestyle="--")
+        ax.plot(test.index, forecast_hw, label="Holt-Winters Forecast", linestyle="--")
+        ax.plot(test.index, forecast_svr, label="SVR Forecast", linestyle="--")
+        ax.legend()
+        st.pyplot(fig)
+
+        # --- RMSE ---
+        for model_name, forecast in results.items():
+            if not np.isnan(forecast).all():
+                rmse = np.sqrt(mean_squared_error(test, forecast))
+                st.write(f"✅ RMSE {model_name}: {rmse:.2f}")
