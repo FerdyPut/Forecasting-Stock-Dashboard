@@ -278,7 +278,7 @@ with tab1:
                             st.metric(
                                 label=f"Rata-rata Harga Saham ({metric_choice})",
                                 value=f"{avg_prices.mean():.2f}",
-                                delta="\u200B IDR etc.",
+                                delta="\u200B IDR (Rupiah)",
                                 delta_color = "off"
                             )
                             st.badge(f"Nilai dalam satuan Mata Uang terkait", color= "violet")
