@@ -36,7 +36,7 @@ st.markdown(
                     border-radius: 10px;
                     padding: 5px;
                     text-align: center;
-                    background-color: rgba(250, 177, 47, 0.4);
+                    background-color: rgba(250, 177, 47, 0.7);
                     color: black;
                     transition: 0.3s;
                     position: relative;
@@ -45,7 +45,7 @@ st.markdown(
                     font-family: 'Poppins';
                 }}
                 .hover-box1:hover {{
-                    background-color: rgba(250, 177, 47, 0.4);
+                    background-color: rgba(250, 177, 47, 0.7);
                     transform: scale(1.01);
                 }}
 
