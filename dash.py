@@ -22,6 +22,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from statsmodels.stats.diagnostic import acorr_ljungbox
 from scipy.stats import shapiro, jarque_bera
+import openpyxl
 
 # --- Page Config ---
 
