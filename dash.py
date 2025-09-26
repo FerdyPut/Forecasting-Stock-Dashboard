@@ -42,7 +42,7 @@ st.markdown(
                     position: relative;
                     margin-top: 1px;
                     font-size: 18px;
-                    font-family: 'Poppins', sans-serif;
+                    font-family: 'League Spartan', sans-serif;
                 }}
                 .hover-box1:hover {{
                     background-color: #FAB12F;
