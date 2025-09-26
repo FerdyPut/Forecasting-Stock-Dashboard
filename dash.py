@@ -46,13 +46,16 @@ with tab1:
         with col1:
             with st.container(border=True): # Streamlit tidak mendukung border=True secara default
                 # --- Pilih ticker ---
+                # Ambil list saham dari Excel (kolom A)
                 tickers_list = df_saham.iloc[:, 0].dropna().tolist()
 
+                # Multiselect pilihan saham
                 selected_tickers = st.multiselect(
-                            "Pilih Saham:", 
-                            options=tickers_list,
-                            default=["BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK"]
-                        )
+                    "Pilih Saham:", 
+                    options=tickers_list,
+                    default=["BBCA", "BBRI", "BMRI", "ASII", "TLKM", "UNVR"]  # tanpa .JK
+                )
+
                 # --- Tambahkan suffix .JK untuk yfinance ---
                 tickers = [ticker + ".JK" for ticker in selected_tickers]
 
