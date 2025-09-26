@@ -774,16 +774,16 @@ with col1:
                 #st.write(msg["content"])
 
         # input user
-        if prompt := st.chat_input("Tanyakan arah tren (contoh: menurun, naik, stagnan)..."):
+        if prompt := st.chat_input("Tanyakan arah tren (ex: menurun, naik, stagnan)..."):
             # tampilkan pesan user
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.write(prompt)
 
             # respon chatbot
-            if "menurun" in prompt.lower():
+            if "menurun" or "turun" in prompt.lower():
                 reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
-            elif "naik" in prompt.lower() or "menaik" in prompt.lower():
+            elif "naik" or "menaik" in prompt.lower() or "menaik" in prompt.lower():
                 reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
             elif "stagnan" or "lurus" or "tetap" in prompt.lower() or "lurus" in prompt.lower():
                 reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
