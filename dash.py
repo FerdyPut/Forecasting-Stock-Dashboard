@@ -757,7 +757,7 @@ with col2:
 
 with col1:
     with st.container(border=True):
-        st.subheader("🤖 Insight AI")
+        st.subheader("🤖 TRENDS ADVISOR WITH AI")
     
         st.info(
             f"Nilai MAPE metode {method_choice}: {mape:.2f}% → "
