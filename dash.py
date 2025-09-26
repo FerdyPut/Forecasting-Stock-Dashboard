@@ -743,6 +743,14 @@ with col2:
             st.altair_chart(line_chart, use_container_width=True)
 
             # --- MAPE ---
-            mape = np.mean(np.abs((test - forecast) / test)) * 100
+
+            # pastikan array
+            y_true = np.array(test)
+            y_pred = np.array(forecast)
+
+            # buang nilai nol atau NaN pada data aktual
+            mask = (y_true != 0) & ~np.isnan(y_true) & ~np.isnan(y_pred)
+
+            mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
             st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
             st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
