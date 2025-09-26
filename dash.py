@@ -31,12 +31,12 @@ st.badge("Selamat datang di STOCK INTELLIGENCE HUB 🚀", color="violet")
 st.markdown(
                 f"""
                 <style>
-                .hover-box {{
+                .hover-box1 {{
                     border: 1px solid #FAB12F;
                     border-radius: 10px;
                     padding: 5px;
                     text-align: center;
-                    background-color: orange;
+                    background-color: #FAB12F;
                     color: white;
                     transition: 0.3s;
                     position: relative;
@@ -44,14 +44,14 @@ st.markdown(
                     font-size: 18px;
                     font-family: 'Poppins', sans-serif;
                 }}
-                .hover-box:hover {{
+                .hover-box1:hover {{
                     background-color: #FAB12F;
                     transform: scale(1.01);
                 }}
 
                 </style>
 
-                <div class="hover-box">
+                <div class="hover-box1">
                     <strong>Dashboard ini dibuat supaya stakeholders bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell.</strong>
                 </div>
                 <p></p>
