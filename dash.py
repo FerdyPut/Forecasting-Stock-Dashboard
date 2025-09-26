@@ -760,7 +760,7 @@ with col1:
     
         st.info(
             f"Nilai MAPE metode {method_choice}: {mape:.2f}% → "
-            f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {ticker}."
+            f"Semakin kecil MAPE, semakin akurat dalam meramalkan harga {metric_choice} di {saham_choice}."
         )
 
         # Pilihan arah tren
