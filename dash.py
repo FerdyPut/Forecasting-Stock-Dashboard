@@ -636,7 +636,7 @@ with col2:
         # Visualisasi interaktif
         # =======================
         if forecast is not None:
-            df_plot = pd.DataFrame({
+            df_actual = pd.DataFrame({
                 "Date": ts.index,
                 "Actual": ts.values
             })
@@ -645,20 +645,19 @@ with col2:
                 "Forecast": forecast
             })
 
-            base = alt.Chart(df_plot).mark_line(color="#1a69e0").encode(
+            df_plot = pd.concat([df_actual, df_forecast])
+
+            line_chart = alt.Chart(df_plot).mark_line().encode(
                 x="Date:T",
-                y="Actual:Q",
-                tooltip=["Date:T", "Actual:Q"]
+                y="Value:Q",
+                color=alt.Color("Type:N", scale=alt.Scale(domain=["Actual", "Forecast"],
+                                                        range=["black", "#ee6525"])),
+                strokeDash=alt.StrokeDash("Type:N", scale=alt.Scale(domain=["Actual", "Forecast"],
+                                                                range=[[1, 0], [4, 4]])),
+                tooltip=["Date:T", "Value:Q", "Type:N"]
             )
 
-            forecast_line = alt.Chart(df_forecast).mark_line(color="#ee6525", strokeDash=[4, 4]).encode(
-                x="Date:T",
-                y="Forecast:Q",
-                tooltip=["Date:T", "Forecast:Q"],
-                value="Forecast"
-            )
-
-            st.altair_chart(base + forecast_line, use_container_width=True)
+            st.altair_chart(line_chart, use_container_width=True)
 
             # --- RMSE ---
             rmse = np.sqrt(mean_squared_error(test, forecast))
