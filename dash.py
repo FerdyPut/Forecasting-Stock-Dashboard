@@ -27,7 +27,7 @@ from scipy.stats import shapiro, jarque_bera
 
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("🔮 STOCK INTELLIGENCE HUB")
-st.badge("Selamat datang di STOCK INTELLIGENCE HUB 🚀", color="purple")
+st.badge("Selamat datang di STOCK INTELLIGENCE HUB 🚀", color="violet")
 st.caption("Di sini, Anda bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell. Semua insight ada di ujung jari Anda.")
 
 # --- Layout 2 kolom ---
