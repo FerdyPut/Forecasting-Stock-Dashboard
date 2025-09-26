@@ -642,15 +642,16 @@ with col2:
         # =====================================================
         # 1. CEK ASUMSI STASIONERITAS (ADF Test)
         # =====================================================
-        adf_result = adfuller(train)
-        p_value = adf_result[1]
+        if method_choice == "ARIMA" and method_choice == "Holt-Winters":
+            adf_result = adfuller(train)
+            p_value = adf_result[1]
 
-        if p_value > 0.05:
-            ts = ts.diff().dropna()
-            train, test = ts.iloc[:train_size], ts.iloc[train_size:]
-            st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
-        else:
-            st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
+            if p_value > 0.05:
+                ts = ts.diff().dropna()
+                train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+                st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
+            else:
+                st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
 
         # =====================================================
         # 2. Cek ASUMSI RESIDUAL (WHITE NOISE, NORMALITAS)
