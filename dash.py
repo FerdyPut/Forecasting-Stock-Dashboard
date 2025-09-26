@@ -623,7 +623,9 @@ with tab1:
         )
             with st.container(border=True):
                 try:
-                    sahamm = [ticker + ".JK" for ticker in tickers_list]
+
+                    tickers_list2 = df_saham.iloc[:, 1].dropna().tolist()
+                    sahamm = [ticker + ".JK" for ticker in tickers_list2]
                     # --- Pilih saham & metric ---
                     saham_choice = st.selectbox("Pilih Saham untuk Forecasting", sahamm)
                     metric_choice = st.session_state.metric_choice
