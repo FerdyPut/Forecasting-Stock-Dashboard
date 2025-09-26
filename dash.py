@@ -642,15 +642,16 @@ with col2:
         # =====================================================
         # 1. CEK ASUMSI STASIONERITAS (ADF Test)
         # =====================================================
-        if method_choice == "ARIMA" and method_choice == "Holt-Winters":
-            adf_result = adfuller(train)
-            p_value = adf_result[1]
+        adf_result = adfuller(train)
+        p_value = adf_result[1]
 
-            if p_value > 0.05:
-                ts = ts.diff().dropna()
-                train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+        if p_value > 0.05:
+            ts = ts.diff().dropna()
+            train, test = ts.iloc[:train_size], ts.iloc[train_size:]
+            if method_choice == "ARIMA" and method_choice == "Holt-Winters":
                 st.warning(f"⚠️ Data tidak stasioner (p-value = {p_value:.4f}) → lakukan differencing.")
-            else:
+        else:
+            if method_choice == "ARIMA" and method_choice == "Holt-Winters":
                 st.success(f"✅ Data stasioner (p-value = {p_value:.4f})")
 
         # =====================================================
