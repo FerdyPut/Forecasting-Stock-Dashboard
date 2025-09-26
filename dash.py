@@ -785,7 +785,7 @@ with col1:
                 reply = "📉 Prediksi harga menurun → disarankan **jual / hindari beli dulu**. Investor jangka panjang bisa tunggu momentum beli di bawah."
             elif "naik" in prompt.lower() or "menaik" in prompt.lower():
                 reply = "📈 Prediksi harga naik → rekomendasi **beli / hold** untuk memaksimalkan potensi keuntungan."
-            elif "stagnan" in prompt.lower() or "lurus" in prompt.lower():
+            elif "stagnan" or "lurus" or "tetap" in prompt.lower() or "lurus" in prompt.lower():
                 reply = "➖ Prediksi harga stagnan → sebaiknya **hold**, karena peluang profit terbatas."
             else:
                 reply = "🤔 Saya hanya bisa menjawab tren: menurun, naik, atau stagnan."
