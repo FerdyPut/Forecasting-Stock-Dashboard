@@ -27,7 +27,8 @@ from scipy.stats import shapiro, jarque_bera
 
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
 st.title("🔮 STOCK INTELLIGENCE HUB")
-st.caption("Selamat datang di Dynamic Stock Dashboard 🚀. Di sini, Anda bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell. Semua insight ada di ujung jari Anda.")
+st.caption("Selamat datang di STOCK INTELLIGENCE HUB 🚀")
+st.caption("Di sini, Anda bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell. Semua insight ada di ujung jari Anda.")
 
 # --- Layout 2 kolom ---
 col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
