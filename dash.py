@@ -52,7 +52,7 @@ st.markdown(
                 </style>
 
                 <div class="hover-box1">
-                    <strong>Dashboard ini dibuat supaya stakeholders bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell.</strong>
+                    <b>Dashboard ini dibuat supaya stakeholders bisa melihat bagaimana harga saham bergerak, memprediksi arahnya, dan mengukur seberapa akurat model prediksi melalui MAPE & RMSE. Dengan sentuhan chatbot interaktif, dashboard ini bukan hanya menampilkan angka—tapi juga memberikan rekomendasi strategi: kapan harus hold, buy, atau sell.</b>
                 </div>
                 <p></p>
                 """, unsafe_allow_html=True
