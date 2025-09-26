@@ -51,7 +51,7 @@ with tab1:
                 selected_tickers = st.multiselect(
                             "Pilih Saham:", 
                             options=tickers_list,
-                            default=["BBCA", "BBRI", "BMRI", "ASII", "TLKM", "UNVR"]
+                            default=["BBCA.JK", "BBRI.JK", "BMRI.JK", "ASII.JK", "TLKM.JK", "UNVR.JK"]
                         )
                 # --- Tambahkan suffix .JK untuk yfinance ---
                 tickers = [ticker + ".JK" for ticker in selected_tickers]
@@ -275,7 +275,7 @@ with tab1:
                             st.metric(
                                 label=f"Rata-rata Harga Saham ({metric_choice})",
                                 value=f"{avg_prices.mean():.2f}",
-                                delta="\u200B IDR, USD, etc.",
+                                delta="\u200B IDR etc.",
                                 delta_color = "off"
                             )
                             st.badge(f"Nilai dalam satuan Mata Uang terkait", color= "violet")
