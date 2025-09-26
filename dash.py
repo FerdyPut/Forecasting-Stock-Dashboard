@@ -48,21 +48,7 @@ st.markdown(
                     background-color: #FAB12F;
                     transform: scale(1.01);
                 }}
-                .download-btn {{
-                    display: none;
-                    margin-top: 10px;
-                }}
-                .hover-box:hover .download-btn {{
-                    display: block;
-                }}
-                a.download-link {{
-                    color: white;
-                    text-decoration: none;
-                    padding: 5px 10px;
-                    background-color: #615fff;
-                    border-radius: 5px;
-                    font-weight: bold;
-                }}
+
                 </style>
 
                 <div class="hover-box">
