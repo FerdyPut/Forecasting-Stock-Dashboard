@@ -579,50 +579,51 @@ with col1:
         st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-    with st.container(border=True):
-        st.markdown(
-            f"""
-            <style>
-            .hover-box {{
-                border: 1px solid #5b4699;
-                border-radius: 10px;
-                padding: 5px;
-                text-align: center;
-                background-color: #5b4699;
-                color: white;
-                transition: 0.3s;
-                position: relative;
-                margin-top: 1px;
-                font-size: 18px;
-                font-family: 'Poppins', sans-serif;
-            }}
-            .hover-box:hover {{
-                background-color: #5b4699;
-                transform: scale(1.01);
-            }}
-            .download-btn {{
-                display: none;
-                margin-top: 10px;
-            }}
-            .hover-box:hover .download-btn {{
-                display: block;
-            }}
-            a.download-link {{
-                color: white;
-                text-decoration: none;
-                padding: 5px 10px;
-                background-color: #615fff;
-                border-radius: 5px;
-                font-weight: bold;
-            }}
-            </style>
+    st.markdown(
+    f"""
+    <style>
+    .hover-box {{
+        border: 1px solid #5b4699;
+        border-radius: 10px;
+        padding: 5px;
+        text-align: center;
+        background-color: #5b4699;
+        color: white;
+        transition: 0.3s;
+        position: relative;
+        margin-top: 1px;
+        font-size: 18px;
+        font-family: 'Poppins', sans-serif;
+    }}
+    .hover-box:hover {{
+        background-color: #5b4699;
+        transform: scale(1.01);
+    }}
+    .download-btn {{
+        display: none;
+        margin-top: 10px;
+    }}
+    .hover-box:hover .download-btn {{
+        display: block;
+    }}
+    a.download-link {{
+        color: white;
+        text-decoration: none;
+        padding: 5px 10px;
+        background-color: #615fff;
+        border-radius: 5px;
+        font-weight: bold;
+    }}
+    </style>
 
-            <div class="hover-box">
-                <strong>FORECASTING SAHAM: MENDUKUNG STRATEGI INVESTASI & BISNIS</strong>
-            </div>
-            <p></p>
-            """, unsafe_allow_html=True
-        )
+    <div class="hover-box">
+        <strong>FORECASTING SAHAM: MENDUKUNG STRATEGI INVESTASI & BISNIS</strong>
+    </div>
+    <p></p>
+    """, unsafe_allow_html=True
+)
+    with st.container(border=True):
+
         # --- Pilih saham & metric ---
         saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
         metric_choice = st.session_state.metric_choice
