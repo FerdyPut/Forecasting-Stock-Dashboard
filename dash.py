@@ -793,3 +793,6 @@ with col1:
             st.session_state.messages.append({"role": "assistant", "content": reply})
             with st.chat_message("assistant"):
                 st.write(reply)
+
+with st.container(border=True):
+    st.caption("Copyrights @2025 by Ferdyansyah P Putra")
