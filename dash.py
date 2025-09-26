@@ -645,7 +645,7 @@ with col2:
                 "Forecast": forecast
             })
 
-            base = alt.Chart(df_plot).mark_line(color="black").encode(
+            base = alt.Chart(df_plot).mark_line(color="purple").encode(
                 x="Date:T",
                 y="Actual:Q",
                 tooltip=["Date:T", "Actual:Q"]
