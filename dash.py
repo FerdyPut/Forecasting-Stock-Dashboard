@@ -626,6 +626,9 @@ with tab1:
                 sahamm = [ticker + ".JK" for ticker in tickers_list]
                 # --- Pilih saham & metric ---
                 saham_choice = st.selectbox("Pilih Saham untuk Forecasting", sahamm)
+                if saham_choice.empty:
+                   st.error("⚠️ Error: Data tidak tersedia. Silakan ganti time horizon atau pilih saham lainnya.")
+
                 metric_choice = st.session_state.metric_choice
                 method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
                 
