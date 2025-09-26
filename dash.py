@@ -41,7 +41,7 @@ st.markdown(
                     transition: 0.3s;
                     position: relative;
                     margin-top: 1px;
-                    font-size: 18px;
+                    font-size: 18222px;
                     font-family: 'Poppins', sans-serif;
                 }}
                 .hover-box:hover {{
