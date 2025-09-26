@@ -654,7 +654,8 @@ with col2:
             forecast_line = alt.Chart(df_forecast).mark_line(color="#ee6525", strokeDash=[4, 4]).encode(
                 x="Date:T",
                 y="Forecast:Q",
-                tooltip=["Date:T", "Forecast:Q"]
+                tooltip=["Date:T", "Forecast:Q"],
+                value="Forecast"
             )
 
             st.altair_chart(base + forecast_line, use_container_width=True)
