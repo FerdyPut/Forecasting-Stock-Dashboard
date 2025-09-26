@@ -17,8 +17,6 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
-from prophet import Prophet
-from pmdarima import auto_arima
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
@@ -615,7 +613,7 @@ with col2:
         except Exception as e:
             st.error(f"ARIMA error: {e}")
             forecast_arima = [np.nan] * len(test)
-            
+
         # =======================
         # 2. Holt-Winters
         # =======================
