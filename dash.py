@@ -624,7 +624,7 @@ with tab1:
             with st.container(border=True):
                 try:
                     # --- Pilih saham & metric ---
-                    saham_choice = st.selectbox("Pilih Saham untuk Forecasting", tickers)
+                    saham_choice = st.selectbox("Pilih 1 Saham untuk Forecasting diantara saham yang sudah dipilih di Atas!", tickers)
                     metric_choice = st.session_state.metric_choice
                     method_choice = st.selectbox("Pilih Metode Forecasting + Cek Asumsi", ["ARIMA", "Holt-Winters", "SVR"])
                     
