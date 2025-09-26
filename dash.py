@@ -800,6 +800,7 @@ with tab1:
 
 with tab2:
     st.subheader("📊 Daftar Saham BEI")
+    st.info("Adapun daftar saham-saham ini berdasarkan dari perusahaan saham yang terdaftar di Bursa Efek Indonesia per September 2025")
 
     # --- Styling biar tabel bagus ---
     styled_df = (
