@@ -47,7 +47,7 @@ with tab1:
             with st.container(border=True): # Streamlit tidak mendukung border=True secara default
                 # --- Pilih ticker ---
                 # Ambil list saham dari Excel (kolom A)
-                tickers_list = df_saham.iloc[:, 0].dropna().tolist()
+                tickers_list = df_saham.iloc[:, 1].dropna().tolist()
 
                 # Multiselect pilihan saham
                 selected_tickers = st.multiselect(
