@@ -765,8 +765,8 @@ with tab1:
                 )
 
                 # simpan riwayat percakapan
-                #if "messages" not in st.session_state:
-                    #st.session_state.messages = []
+                if "messages" not in st.session_state:
+                    st.session_state.messages = []
 
                 # tampilkan riwayat
                 #for msg in st.session_state.messages:
