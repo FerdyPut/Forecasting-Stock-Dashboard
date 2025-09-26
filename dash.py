@@ -26,7 +26,7 @@ from scipy.stats import shapiro, jarque_bera
 # --- Page Config ---
 
 st.set_page_config(page_title="📊 Stock Dashboard", layout="wide")
-st.title("📈 Dynamic Stock Dashboard")
+st.title("🔮 STOCK INTELLIGENCE HUB")
 
 # --- Layout 2 kolom ---
 col1, col2 = st.columns([1, 2])  # kiri: input, kanan: grafik
