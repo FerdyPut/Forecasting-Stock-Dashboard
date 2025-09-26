@@ -798,5 +798,4 @@ with col1:
 
 with st.container(border=False):
     st.caption("Copyrights @2025 by Ferdyansyah P Putra")
-with col2:
     st.caption("Connect with me: [My LinkedIn](https://www.linkedin.com/in/ferdypput/)")
