@@ -195,8 +195,15 @@ with tab1:
                         # --- Simpan data asli (untuk tabel/opsi lain) ---
                         data_nonnormal = data_metric.copy()
 
+                        # --- Pilih tampilan data ---
+                        scale_option = st.radio(
+                            "Tipe Data",
+                            ["Normalisasi", "Asli"],
+                            horizontal=True
+                        )
+
                         # --- Normalisasi (kecuali Volume) ---
-                        if metric_choice != "Volume":
+                        if scale_option == "Normalisasi" and metric_choice != "Volume":
                             data_metric = data_metric / data_metric.iloc[0]
 
                         # --- Reshape ke long format untuk Altair ---
@@ -216,7 +223,7 @@ with tab1:
                         )
 
                         # --- Line chart Altair ---
-                        st.badge(f" Perbandingan Harga {metric_choice} Saham", color="grey")
+                        st.badge(f" Perbandingan Harga {metric_choice} Saham ({scale_option})", color="grey")
                         chart = (
                             alt.Chart(df_long)
                             .mark_line()
@@ -224,7 +231,7 @@ with tab1:
                                 x=alt.X("Date:T", title="Date"),
                                 y=alt.Y(
                                     "Value:Q",
-                                    title=("Normalized " if metric_choice != "Volume" else "") + metric_choice,
+                                    title=(("Normalized " if scale_option == "Normalisasi" and metric_choice != "Volume" else "") + metric_choice),
                                     scale=alt.Scale(domain=[ymin, ymax])
                                 ),
                                 color=alt.Color("Saham:N", title="Saham"),
