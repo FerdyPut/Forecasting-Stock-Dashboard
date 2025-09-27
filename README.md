@@ -32,6 +32,7 @@ Two Features:
    <img width="1365" height="614" alt="image" src="https://github.com/user-attachments/assets/caeec5da-26cb-4108-a79e-eea8f579ea1c" />
 
 
+**Summary:** The dashboard provides several visualizations to generate insights from the selected stock, including price indicators such as open, close, high, and volume. In addition, it offers smoothing visualizations to better capture underlying patterns. For forecasting, the dashboard implements both conventional models (Holt-Winters and ARIMA) as well as a machine learning model (Support Vector Regression, SVR).
 
 ### 🔗 Live Demo  
 Check out the live version of the dashboard here:  
