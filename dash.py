@@ -144,6 +144,50 @@ with tab1:
                 if data.empty:
                     st.error("⚠️ Data tidak ditemukan untuk range ini.")
                 else:
+                    st.markdown(
+                    f"""
+                    <style>
+                    .hover-box {{
+                        border: 1px solid #5b4699;
+                        border-radius: 10px;
+                        padding: 5px;
+                        text-align: center;
+                        background-color: #5b4699;
+                        color: white;
+                        transition: 0.3s;
+                        position: relative;
+                        margin-top: 1px;
+                        font-size: 18px;
+                        font-family: 'Poppins', sans-serif;
+                    }}
+                    .hover-box:hover {{
+                        background-color: #5b4699;
+                        transform: scale(1.01);
+                    }}
+                    .download-btn {{
+                        display: none;
+                        margin-top: 10px;
+                    }}
+                    .hover-box:hover .download-btn {{
+                        display: block;
+                    }}
+                    a.download-link {{
+                        color: white;
+                        text-decoration: none;
+                        padding: 5px 10px;
+                        background-color: #615fff;
+                        border-radius: 5px;
+                        font-weight: bold;
+                    }}
+                    </style>
+
+                    <div class="hover-box">
+                        <strong>HISTORICAL STOCK OF PERFORMANCE</strong>
+                    </div>
+                    <p></p>
+                    """, unsafe_allow_html=True
+                )
+                    
                     with st.container(border=True):
                         metric_choice = st.session_state.metric_choice
                         data_metric = data[metric_choice]
@@ -172,7 +216,7 @@ with tab1:
                         )
 
                         # --- Line chart Altair ---
-                        st.write(f"### 📊 Perbandingan Harga {metric_choice} Saham")
+                        st.caption(f"### 📊 Perbandingan Harga {metric_choice} Saham")
                         chart = (
                             alt.Chart(df_long)
                             .mark_line()
