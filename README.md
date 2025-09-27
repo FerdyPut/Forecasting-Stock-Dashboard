@@ -16,3 +16,13 @@ This dashboard is designed to:
 - Provide an accessible tool for stock data exploration without the need for manual coding.
 - Serve as a learning resource for data practitioners, students, and researchers interested in financial forecasting.
 
+## Documentation + Link
+Two Features:
+1. Forecast
+2. Types of Stock
+
+   <img width="1365" height="641" alt="image" src="https://github.com/user-attachments/assets/bb848058-f9ab-42e5-9ef9-c59eb8819dc5" />
+
+### 🔗 Live Demo  
+Check out the live version of the dashboard here:  
+👉 [Forecasting Stock Dashboard](https://forecastingstock-dashboard.streamlit.app/)
