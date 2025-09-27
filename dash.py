@@ -216,7 +216,7 @@ with tab1:
                         )
 
                         # --- Line chart Altair ---
-                        st.caption(f"### 📊 Perbandingan Harga {metric_choice} Saham")
+                        st.badge(f"### 📊 Perbandingan Harga {metric_choice} Saham")
                         chart = (
                             alt.Chart(df_long)
                             .mark_line()
