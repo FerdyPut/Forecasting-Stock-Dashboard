@@ -802,7 +802,7 @@ with tab1:
                         mask = (y_true != 0) & ~np.isnan(y_true) & ~np.isnan(y_pred)
 
                         mape = np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
-                        st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f}")
+                        st.success(f"Nilai MAPE metode {method_choice}: {mape:.2f} %")
                         st.caption(f"✅ MAPE (Pengukuran yang menunjukkan semakin kecil nilai MAPE semakin baik dalam memprediksi)")
                 except Exception as e:
                     st.error(f"⚠️ Error: {str(e)}. Silakan ganti time horizon yang lebih panjang lagi atau jika masih error, maka pilih saham lainnya.")
