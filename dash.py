@@ -582,24 +582,29 @@ with tab1:
                 st.altair_chart(final_chart, use_container_width=True)
 
         # Fungsi
-
         def analyze_stock_full(ticker, start_date, end_date, metric):
             df = yf.download(
                 ticker,
                 start=start_date - timedelta(days=400),
                 end=end_date,
-                progress=False
+                progress=False,
+                auto_adjust=False
             )
 
-            if df.empty or metric not in df.columns:
+            if df.empty:
+                return None
+
+            # === Pastikan kolom 1D ===
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+
+            if metric not in df.columns:
                 return None
 
             price = df[metric].dropna()
 
             if len(price) < 30:
                 return None
-
-            returns = price.pct_change().dropna()
 
             last_date = price.index[-1]
             current_year = last_date.year
@@ -610,21 +615,21 @@ with tab1:
             ytd_data = price[price.index.year == current_year]
             ytd = (
                 (ytd_data.iloc[-1] / ytd_data.iloc[0] - 1) * 100
-                if len(ytd_data) > 1 else np.nan
+                if len(ytd_data) > 1 else None
             )
 
             # ======================
-            # MoM (~21 trading days)
+            # MoM (21 trading days)
             # ======================
             mom = (
                 (price.iloc[-1] / price.iloc[-21] - 1) * 100
-                if len(price) > 21 else np.nan
+                if len(price) > 21 else None
             )
 
             # ======================
-            # YoY Quarterly (MEAN based)
+            # YoY Quarterly (MEAN BASED)
             # ======================
-            yoy_quarter = {}
+            yoy = {}
             for q in [1, 2, 3, 4]:
                 curr_q = price[
                     (price.index.year == current_year) &
@@ -635,24 +640,13 @@ with tab1:
                     (price.index.quarter == q)
                 ]
 
-                yoy_quarter[f"YoY Q{q}"] = (
+                yoy[f"YoY Q{q}"] = (
                     (curr_q.mean() / prev_q.mean() - 1) * 100
-                    if len(curr_q) > 10 and len(prev_q) > 10 else np.nan
+                    if len(curr_q) > 10 and len(prev_q) > 10 else None
                 )
 
             # ======================
-            # Size (Volatility-based)
-            # ======================
-            vol_all = returns.std()
-            vol_60 = returns.rolling(60).std().dropna()
-
-            if vol_60.empty or pd.isna(vol_all):
-                size = "Unknown"
-            else:
-                size = "Large" if vol_60.iloc[-1] < vol_all else "Small"
-
-            # ======================
-            # When (MA Cross)
+            # When (MA Cross – SAFE)
             # ======================
             if len(price) < 200:
                 when = "Insufficient data"
@@ -665,55 +659,22 @@ with tab1:
             return {
                 "Saham": ticker.replace(".JK", ""),
                 "Per Tanggal": last_date.strftime("%Y-%m-%d"),
-                "YTD (%)": round(ytd, 2),
-                "MoM (%)": round(mom, 2),
-                "YoY Q1": round(yoy_quarter["YoY Q1"], 2),
-                "YoY Q2": round(yoy_quarter["YoY Q2"], 2),
-                "YoY Q3": round(yoy_quarter["YoY Q3"], 2),
-                "YoY Q4": round(yoy_quarter["YoY Q4"], 2),
-                "Size": size,
+                "YTD (%)": round(ytd, 2) if ytd is not None else None,
+                "MoM (%)": round(mom, 2) if mom is not None else None,
+                "YoY Q1": round(yoy["YoY Q1"], 2) if yoy["YoY Q1"] is not None else None,
+                "YoY Q2": round(yoy["YoY Q2"], 2) if yoy["YoY Q2"] is not None else None,
+                "YoY Q3": round(yoy["YoY Q3"], 2) if yoy["YoY Q3"] is not None else None,
+                "YoY Q4": round(yoy["YoY Q4"], 2) if yoy["YoY Q4"] is not None else None,
                 "When": when
             }
-               
-        def generate_signal(row):
-            yoy_vals = [
-                row["YoY Q1"],
-                row["YoY Q2"],
-                row["YoY Q3"],
-                row["YoY Q4"]
-            ]
-
-            yoy_pos = sum(v > 0 for v in yoy_vals if not pd.isna(v))
-            yoy_neg = sum(v < 0 for v in yoy_vals if not pd.isna(v))
-
-            ytd = row["YTD (%)"]
-            mom = row["MoM (%)"]
-            when = row["When"]
-
-            if pd.isna(ytd) or pd.isna(mom):
-                return "HOLD"
-
-            if ytd > 10 and mom > 3 and yoy_pos >= 3 and when not in ["No clear trend", "Insufficient data"]:
-                return "STRONG BUY"
-
-            if ytd > 0 and mom >= 0 and yoy_pos >= 2:
-                return "BUY"
-
-            if ytd < -10 and mom < -3 and yoy_neg >= 3:
-                return "STRONG SELL"
-
-            if ytd < 0 and mom < 0 and yoy_neg >= 2:
-                return "SELL"
-
-            return "HOLD"
-        
+                
         with col1:
             with st.container(border=True):
                 st.write("### 🌐 Advanced Analysis")
 
                 results = []
 
-                with st.spinner("📊 Running advanced analysis..."):
+                with st.spinner("📊 Running analysis..."):
                     for t in tickers:
                         res = analyze_stock_full(
                             t,
@@ -730,39 +691,11 @@ with tab1:
 
                 df_table = pd.DataFrame(results)
 
-                # Auto Signal
-                df_table["Signal"] = df_table.apply(generate_signal, axis=1)
-
-                signal_rank = {
-                    "STRONG BUY": 1,
-                    "BUY": 2,
-                    "HOLD": 3,
-                    "SELL": 4,
-                    "STRONG SELL": 5
-                }
-
-                df_table["Rank"] = df_table["Signal"].map(signal_rank)
-                df_table = df_table.sort_values("Rank").drop(columns="Rank")
-
-                def color_signal(val):
-                    return {
-                        "STRONG BUY": "color:#00c853;font-weight:bold",
-                        "BUY": "color:#2e7d32",
-                        "HOLD": "color:#f9a825",
-                        "SELL": "color:#ef5350",
-                        "STRONG SELL": "color:#b71c1c;font-weight:bold"
-                    }.get(val, "")
-
-                styled = (
-                    df_table.style
-                    .applymap(color_signal, subset=["Signal"])
-                    .format("{:.2f}", subset=[
-                        "YTD (%)", "MoM (%)",
-                        "YoY Q1", "YoY Q2", "YoY Q3", "YoY Q4"
-                    ])
+                st.dataframe(
+                    df_table,
+                    use_container_width=True,
+                    hide_index=True
                 )
-
-                st.write(styled)
 
         with col2:
             st.markdown(
