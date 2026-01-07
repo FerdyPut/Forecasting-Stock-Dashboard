@@ -585,7 +585,7 @@ with tab1:
         def analyze_stock_full(ticker, start_date, end_date, metric):
             df = yf.download(
                 ticker,
-                start=start_date - timedelta(days=400),
+                start=start_date - timedelta(days=500),
                 end=end_date,
                 progress=False,
                 auto_adjust=False
@@ -594,7 +594,7 @@ with tab1:
             if df.empty:
                 return None
 
-            # === Pastikan kolom 1D ===
+            # Handle MultiIndex columns
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
 
@@ -602,9 +602,13 @@ with tab1:
                 return None
 
             price = df[metric].dropna()
-
-            if len(price) < 30:
+            if len(price) < 60:
                 return None
+
+            # ======================
+            # Harga sekarang
+            # ======================
+            current_price = price.iloc[-1]
 
             last_date = price.index[-1]
             current_year = last_date.year
@@ -619,7 +623,7 @@ with tab1:
             )
 
             # ======================
-            # MoM (21 trading days)
+            # MoM (~21 trading days)
             # ======================
             mom = (
                 (price.iloc[-1] / price.iloc[-21] - 1) * 100
@@ -627,9 +631,17 @@ with tab1:
             )
 
             # ======================
-            # YoY Quarterly (MEAN BASED)
+            # YoY ALL (TTM)
             # ======================
-            yoy = {}
+            yoy_all = (
+                (price.iloc[-1] / price.iloc[-252] - 1) * 100
+                if len(price) > 252 else None
+            )
+
+            # ======================
+            # YoY Quarterly (Mean Based)
+            # ======================
+            yoy_q = {}
             for q in [1, 2, 3, 4]:
                 curr_q = price[
                     (price.index.year == current_year) &
@@ -640,13 +652,13 @@ with tab1:
                     (price.index.quarter == q)
                 ]
 
-                yoy[f"YoY Q{q}"] = (
+                yoy_q[q] = (
                     (curr_q.mean() / prev_q.mean() - 1) * 100
-                    if len(curr_q) > 10 and len(prev_q) > 10 else None
+                    if len(curr_q) > 5 and len(prev_q) > 5 else None
                 )
 
             # ======================
-            # When (MA Cross – SAFE)
+            # When (MA Cross)
             # ======================
             if len(price) < 200:
                 when = "Insufficient data"
@@ -658,16 +670,16 @@ with tab1:
 
             return {
                 "Saham": ticker.replace(".JK", ""),
-                "Per Tanggal": last_date.strftime("%Y-%m-%d"),
+                "Harga Sekarang": round(current_price, 2),
                 "YTD (%)": round(ytd, 2) if ytd is not None else None,
                 "MoM (%)": round(mom, 2) if mom is not None else None,
-                "YoY Q1": round(yoy["YoY Q1"], 2) if yoy["YoY Q1"] is not None else None,
-                "YoY Q2": round(yoy["YoY Q2"], 2) if yoy["YoY Q2"] is not None else None,
-                "YoY Q3": round(yoy["YoY Q3"], 2) if yoy["YoY Q3"] is not None else None,
-                "YoY Q4": round(yoy["YoY Q4"], 2) if yoy["YoY Q4"] is not None else None,
+                "YoY ALL (%)": round(yoy_all, 2) if yoy_all is not None else None,
+                "YoY Q1 (%)": round(yoy_q[1], 2) if yoy_q[1] is not None else None,
+                "YoY Q2 (%)": round(yoy_q[2], 2) if yoy_q[2] is not None else None,
+                "YoY Q3 (%)": round(yoy_q[3], 2) if yoy_q[3] is not None else None,
+                "YoY Q4 (%)": round(yoy_q[4], 2) if yoy_q[4] is not None else None,
                 "When": when
             }
-                
         with col1:
             with st.container(border=True):
                 st.write("### 🌐 Advanced Analysis")
