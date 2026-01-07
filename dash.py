@@ -586,7 +586,7 @@ with tab1:
         def analyze_stock_full(ticker, start_date, end_date, metric):
             df = yf.download(
                 ticker,
-                start=start_date,
+                start=start_date - timedelta(days=400),
                 end=end_date,
                 progress=False
             )
@@ -595,7 +595,11 @@ with tab1:
                 return None
 
             price = df[metric].dropna()
-            returns = price.pct_change()
+
+            if len(price) < 30:
+                return None
+
+            returns = price.pct_change().dropna()
 
             last_date = price.index[-1]
             current_year = last_date.year
@@ -606,19 +610,19 @@ with tab1:
             ytd_data = price[price.index.year == current_year]
             ytd = (
                 (ytd_data.iloc[-1] / ytd_data.iloc[0] - 1) * 100
-                if len(ytd_data) > 1 else None
+                if len(ytd_data) > 1 else np.nan
             )
 
             # ======================
-            # MoM
+            # MoM (~21 trading days)
             # ======================
             mom = (
                 (price.iloc[-1] / price.iloc[-21] - 1) * 100
-                if len(price) > 21 else None
+                if len(price) > 21 else np.nan
             )
 
             # ======================
-            # YoY per Kuartal
+            # YoY Quarterly (MEAN based)
             # ======================
             yoy_quarter = {}
             for q in [1, 2, 3, 4]:
@@ -632,43 +636,45 @@ with tab1:
                 ]
 
                 yoy_quarter[f"YoY Q{q}"] = (
-                    (curr_q.iloc[-1] / prev_q.iloc[-1] - 1) * 100
-                    if not curr_q.empty and not prev_q.empty else None
+                    (curr_q.mean() / prev_q.mean() - 1) * 100
+                    if len(curr_q) > 10 and len(prev_q) > 10 else np.nan
                 )
 
             # ======================
             # Size (Volatility-based)
             # ======================
-            vol_60 = returns.rolling(60).std().iloc[-1]
             vol_all = returns.std()
-            size = "Large" if vol_60 < vol_all else "Small"
+            vol_60 = returns.rolling(60).std().dropna()
+
+            if vol_60.empty or pd.isna(vol_all):
+                size = "Unknown"
+            else:
+                size = "Large" if vol_60.iloc[-1] < vol_all else "Small"
 
             # ======================
             # When (MA Cross)
             # ======================
-            ma50 = price.rolling(50).mean()
-            ma200 = price.rolling(200).mean()
-            cross = (ma50 > ma200) & (ma50.shift(1) <= ma200.shift(1))
-
-            when = (
-                cross[cross].index[-1].strftime("%b %Y")
-                if cross.any() else "No clear trend"
-            )
+            if len(price) < 200:
+                when = "Insufficient data"
+            else:
+                ma50 = price.rolling(50).mean()
+                ma200 = price.rolling(200).mean()
+                cross = (ma50 > ma200) & (ma50.shift(1) <= ma200.shift(1))
+                when = cross[cross].index[-1].strftime("%b %Y") if cross.any() else "No clear trend"
 
             return {
                 "Saham": ticker.replace(".JK", ""),
                 "Per Tanggal": last_date.strftime("%Y-%m-%d"),
-                "YTD (%)": round(ytd, 2) if ytd is not None else None,
-                "MoM (%)": round(mom, 2) if mom is not None else None,
-                "YoY Q1": round(yoy_quarter["YoY Q1"], 2) if yoy_quarter["YoY Q1"] is not None else None,
-                "YoY Q2": round(yoy_quarter["YoY Q2"], 2) if yoy_quarter["YoY Q2"] is not None else None,
-                "YoY Q3": round(yoy_quarter["YoY Q3"], 2) if yoy_quarter["YoY Q3"] is not None else None,
-                "YoY Q4": round(yoy_quarter["YoY Q4"], 2) if yoy_quarter["YoY Q4"] is not None else None,
+                "YTD (%)": round(ytd, 2),
+                "MoM (%)": round(mom, 2),
+                "YoY Q1": round(yoy_quarter["YoY Q1"], 2),
+                "YoY Q2": round(yoy_quarter["YoY Q2"], 2),
+                "YoY Q3": round(yoy_quarter["YoY Q3"], 2),
+                "YoY Q4": round(yoy_quarter["YoY Q4"], 2),
                 "Size": size,
                 "When": when
             }
-
-
+               
         def generate_signal(row):
             yoy_vals = [
                 row["YoY Q1"],
@@ -677,48 +683,34 @@ with tab1:
                 row["YoY Q4"]
             ]
 
-            yoy_pos = sum(v > 0 for v in yoy_vals if v is not None)
-            yoy_neg = sum(v < 0 for v in yoy_vals if v is not None)
+            yoy_pos = sum(v > 0 for v in yoy_vals if not pd.isna(v))
+            yoy_neg = sum(v < 0 for v in yoy_vals if not pd.isna(v))
 
             ytd = row["YTD (%)"]
             mom = row["MoM (%)"]
             when = row["When"]
 
-            if ytd is None or mom is None:
+            if pd.isna(ytd) or pd.isna(mom):
                 return "HOLD"
 
-            if ytd > 0 and mom > 0 and yoy_pos >= 2 and when != "No clear trend":
+            if ytd > 10 and mom > 3 and yoy_pos >= 3 and when not in ["No clear trend", "Insufficient data"]:
                 return "STRONG BUY"
 
-            if ytd > 0 and mom >= 0 and yoy_pos >= 1:
+            if ytd > 0 and mom >= 0 and yoy_pos >= 2:
                 return "BUY"
 
-            if ytd < -5 and mom < 0 and yoy_neg >= 3:
+            if ytd < -10 and mom < -3 and yoy_neg >= 3:
                 return "STRONG SELL"
 
             if ytd < 0 and mom < 0 and yoy_neg >= 2:
                 return "SELL"
 
             return "HOLD"
-
-        def classify_market_cap(df):
-            avg_price = df["Close"].mean()
-            avg_volume = df["Volume"].mean()
-
-            if avg_price > 3000 and avg_volume > 5_000_000:
-                return "Large Cap"
-            else:
-                return "Small Cap"
-
-
+        
         with col1:
             with st.container(border=True):
-
                 st.write("### 🌐 Advanced Analysis")
 
-                # =========================
-                # Run Advanced Analysis
-                # =========================
                 results = []
 
                 with st.spinner("📊 Running advanced analysis..."):
@@ -738,9 +730,7 @@ with tab1:
 
                 df_table = pd.DataFrame(results)
 
-                # =========================
                 # Auto Signal
-                # =========================
                 df_table["Signal"] = df_table.apply(generate_signal, axis=1)
 
                 signal_rank = {
@@ -754,9 +744,6 @@ with tab1:
                 df_table["Rank"] = df_table["Signal"].map(signal_rank)
                 df_table = df_table.sort_values("Rank").drop(columns="Rank")
 
-                # =========================
-                # Display Table
-                # =========================
                 def color_signal(val):
                     return {
                         "STRONG BUY": "color:#00c853;font-weight:bold",
@@ -775,13 +762,7 @@ with tab1:
                     ])
                 )
 
-                st.dataframe(
-                    styled,
-                    use_container_width=True,
-                    hide_index=True
-                )
-
-               
+                st.write(styled)
 
         with col2:
             st.markdown(
