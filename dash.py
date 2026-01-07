@@ -583,30 +583,39 @@ with tab1:
 
         with col1:
             with st.container(border=True):
-                    # --- Input: pilih skema warna ---
-                st.write(f"### 🌐Heatmap Saham: Market Cap vs Daily Return")
+
+                st.write("### 🌐 Heatmap Saham: Market Cap vs Daily Return")
+
                 color_map = st.selectbox(
                     "Pilih Skema Warna",
                     ["RdYlGn", "Viridis", "Bluered", "Plasma", "Cividis"],
                     index=3
                 )
-                daily_return = data_metric.pct_change().iloc[-1] * 100  # % terakhir
+
+                daily_return = data_metric.pct_change().iloc[-1] * 100
                 daily_return = daily_return.round(2)
 
-                # --- Ambil Market Cap ---
-                market_caps = {}
-                for t in tickers:
-                    info = yf.Ticker(t).info
-                    market_caps[t] = info.get("marketCap", None)
+                @st.cache_data(ttl=24 * 3600)
+                def get_market_caps(tickers):
+                    caps = {}
+                    for t in tickers:
+                        try:
+                            caps[t] = yf.Ticker(t).fast_info.get("market_cap")
+                        except Exception:
+                            caps[t] = None
+                    return caps
 
-                # --- Buat DataFrame ringkasan ---
+                with st.spinner("Mengambil Market Cap..."):
+                    market_caps = get_market_caps(tickers)
+
                 df_heat = pd.DataFrame({
                     "Saham": tickers,
                     "Daily Return (%)": [daily_return[t] for t in tickers],
                     "Market Cap": [market_caps[t] for t in tickers]
                 })
 
-                # --- Treemap Plotly ---
+                df_heat["Market Cap"] = df_heat["Market Cap"].fillna(0)
+
                 fig = px.treemap(
                     df_heat,
                     path=["Saham"],
@@ -615,7 +624,6 @@ with tab1:
                     color_continuous_scale=color_map
                 )
 
-                # Geser colorbar ke atas
                 fig.update_layout(
                     coloraxis_colorbar=dict(
                         orientation="h",
